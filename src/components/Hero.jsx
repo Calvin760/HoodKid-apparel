@@ -14,7 +14,7 @@ const Hero = () => {
         />
       </div>
 
-      {/* Desktop Images (hidden on small screens) */}
+      {/* Desktop Images */}
       <div className="hidden sm:grid grid-cols-2 h-full">
         <img
           src={assets.p26}
@@ -31,14 +31,14 @@ const Hero = () => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/10"></div>
 
-      {/* Text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+      {/* ❗ TEXT (HIDDEN ON MOBILE) */}
+      <div className="hidden sm:flex absolute inset-0 flex-col items-center justify-center text-center px-6">
 
         <p className="text-white text-sm tracking-widest mb-3">
           LEVEL UP YOUR LOOK
         </p>
 
-        <h1 className="text-white text-3xl sm:text-6xl font-bold tracking-wide">
+        <h1 className="text-white text-4xl md:text-6xl font-bold tracking-wide">
           NEW SEASON DROP
         </h1>
 

@@ -12,6 +12,7 @@ import Orders from './pages/Orders'
 import Navbar from './components/Navbar'
 import './index.css'
 import WishList from './pages/WishList'
+import TopBar from './components/TopBar'
 
 const App = () => {
 
@@ -20,9 +21,12 @@ const App = () => {
 
   return (
     <div>
-
+      <div>
+        <TopBar />
+      </div>
       {/* ✅ Navbar ALWAYS padded (consistent everywhere) */}
-      <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]'>
+      <div className='sticky top-0 z-50 bg-white px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]'>
+        
         <Navbar />
       </div>
 

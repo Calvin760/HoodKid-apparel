@@ -70,6 +70,11 @@ import p25 from './p25.JPG'
 import p28 from './p28.JPG'
 import p30 from './p30.JPG'
 
+import IMG_2822 from './IMG_2822.PNG'
+import IMG_2823 from './IMG_2823.PNG'
+import IMG_2824 from './IMG_2824.PNG'
+import IMG_2902 from './IMG_2902.JPG'
+
 import wishlist from './wishlist.png'
 
 
@@ -94,11 +99,18 @@ import cross_icon from './cross_icon.png'
 import p26 from './p26.JPG'
 import p29 from './p29.JPG'
 import HOODKID from './HOODKID.png'
+import Hero from './Hero.mp4'
+
 export const assets = {
     logo,
     HOODKID,
     hero_img,
+    Hero,
     wishlist,
+    IMG_2822,
+    IMG_2823,
+    IMG_2824,
+    IMG_2822,
     p26,
     p30,
     p29,
@@ -123,10 +135,10 @@ export const assets = {
 export const products = [
     {
         _id: "aaaaa",
-        name: "Women Round Neck Cotton Top",
+        name: "Men Shorts",
         description: "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
         price: 100,
-        image: [p8],
+        image: [IMG_2822],
         category: "Women",
         subCategory: "Topwear",
         sizes: ["S", "M", "L"],
@@ -138,7 +150,7 @@ export const products = [
         name: "Men Round Neck Pure Cotton T-shirt",
         description: "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
         price: 200,
-        image: [p13],
+        image: [IMG_2823],
         category: "Men",
         subCategory: "Topwear",
         sizes: ["M", "L", "XL"],
@@ -150,7 +162,7 @@ export const products = [
         name: "Girls Round Neck Cotton Top",
         description: "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
         price: 220,
-        image: [p15],
+        image: [IMG_2824],
         category: "Kids",
         subCategory: "Topwear",
         sizes: ["S", "L", "XL"],
@@ -162,7 +174,7 @@ export const products = [
         name: "Men Round Neck Pure Cotton T-shirt",
         description: "A lightweight, usually knitted, pullover shirt, close-fitting and with a round neckline and short sleeves, worn as an undershirt or outer garment.",
         price: 110,
-        image: [p25],
+        image: [IMG_2902],
         category: "Men",
         subCategory: "Topwear",
         sizes: ["S", "M", "XXL"],
@@ -203,7 +215,7 @@ export const products = [
         subCategory: "Bottomwear",
         sizes: ["S", "L", "XL"],
         date: 1716621542448,
-        bestseller: false
+        bestseller: true
     },
     {
         _id: "aaaah",
@@ -215,7 +227,7 @@ export const products = [
         subCategory: "Topwear",
         sizes: ["S", "M", "L", "XL"],
         date: 1716622345448,
-        bestseller: false
+        bestseller: true
     },
     {
         _id: "aaaai",

@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react'
 import { assets } from "../assets/assets";
 import { Link, NavLink } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const Navbar = () => {
 
@@ -21,7 +20,7 @@ const Navbar = () => {
 
       {/* <Link to='/'><img src={assets.logo} className='w-36' alt="" /></Link> */}
       <Link to='/'>
-      <h1 className="text-black text-3xl sm:text-4xl font-bold tracking-wide">
+      <h1 className="text-black text-1xl sm:text-1xl font-bold tracking-wide">
         HOODKID.
       </h1>
       </Link>
@@ -58,13 +57,18 @@ const Navbar = () => {
             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m1.6-5.4a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
           </svg>
         </div>
-
-        {/* Wishlist */}
-        <Link to='/wishlist' className='relative'>
+        {/* 🔍 Mobile Search Icon (NEW) */}
+        <div className='sm:hidden'>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 cursor-pointer">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35m1.6-5.4a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+          </svg>
+        </div>
+        {/* ❤️ Wishlist (DESKTOP ONLY) */}
+        <Link to='/wishlist' className='relative hidden sm:block'>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
           </svg>
-          <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px]'>2</p>
+          <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white rounded-full text-[8px]'>2</p>
         </Link>
 
         {/* Cart */}
@@ -88,7 +92,23 @@ const Navbar = () => {
         </div>
 
         {/* Menu icon */}
-        <img onClick={() => setVissible(true)} src={assets.menu_icon} className='w-5 cursor-pointer sm:hidden' alt="" />
+        {/* <img onClick={() => setVissible(true)} src={assets.menu_icon} className='w-5 cursor-pointer sm:hidden' alt="" /> */}
+        <Link onClick={() => setVissible(true)} className='w-5 cursor-pointer sm:hidden'>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+            className="size-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+            />
+          </svg>
+        </Link>
       </div>
 
       {/* Sidebar */}
