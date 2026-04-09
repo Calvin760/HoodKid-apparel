@@ -23,12 +23,12 @@ const LatestCollection = () => {
     return (
         <div className="my-10 px-4 sm:px-0">
             {/* Title */}
-            <div className="text-center py-8 text-3xl">
+            {/* <div className="text-center py-8 text-3xl">
                 <Title text1={'LATEST'} text2={'COLLECTIONS'} />
                 <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600">
                     Lorem ipsum is simply dummy text of the printing and typesetting industry.
                 </p>
-            </div>
+            </div> */}
 
             {/* Products Grid */}
             <div className="max-w-[1200px] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">

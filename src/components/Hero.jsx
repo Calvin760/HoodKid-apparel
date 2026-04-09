@@ -3,48 +3,78 @@ import { assets } from "../assets/assets";
 
 const Hero = () => {
   return (
-    <div className="relative w-full h-[80vh] overflow-hidden">
+    <div className="w-full">
 
-      {/* Mobile Image (ONLY on small screens) */}
-      <div className="block sm:hidden h-full">
-        <img
-          src={assets.p29}
-          alt=""
-          className="w-full h-full object-cover"
-        />
+      {/* ================= MOBILE ================= */}
+      <div className="block sm:hidden">
+
+        {/* Image (cut bottom by reducing height) */}
+        <div className="w-full h-[75vh] overflow-hidden relative">
+          <img
+            src={assets.p29}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+
+          {/* Optional light overlay */}
+          <div className="absolute inset-0 bg-black/10"></div>
+        </div>
+
+        {/* Text BELOW image */}
+        <div className="text-center px-6 py-6 flex flex-col items-center">
+          <h1 className="text-2xl font-bold tracking-wide">
+            NEW SEASON DROP
+          </h1>
+
+          {/* CTA group */}
+          <div className="flex flex-col items-center mt-2 gap-1">
+            <p className="text-gray-600 text-xs tracking-widest">
+              LEVEL UP YOUR LOOK
+            </p>
+
+            <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
+              SHOP NOW
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      {/* Desktop Images */}
-      <div className="hidden sm:grid grid-cols-2 h-full">
-        <img
-          src={assets.p26}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-        <img
-          src={assets.p30}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* ================= DESKTOP ================= */}
+      <div className="hidden sm:block relative w-full h-[80vh] overflow-hidden">
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/10"></div>
+        <div className="grid grid-cols-2 h-full">
+          <img
+            src={assets.p26}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <img
+            src={assets.p30}
+            alt=""
+            className="w-full h-full object-cover"
+          />
+        </div>
 
-      {/* ❗ TEXT (HIDDEN ON MOBILE) */}
-      <div className="hidden sm:flex absolute inset-0 flex-col items-center justify-center text-center px-6">
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/10"></div>
 
-        <p className="text-white text-sm tracking-widest mb-3">
-          LEVEL UP YOUR LOOK
-        </p>
+        {/* Text */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
 
-        <h1 className="text-white text-4xl md:text-6xl font-bold tracking-wide">
-          NEW SEASON DROP
-        </h1>
+          <p className="text-white text-sm tracking-widest mb-3">
+            LEVEL UP YOUR LOOK
+          </p>
 
-        <button className="mt-6 px-6 py-2 bg-white text-black text-sm font-semibold hover:bg-black hover:text-white transition">
-          SHOP NOW
-        </button>
+          <h1 className="text-white text-4xl md:text-6xl font-bold tracking-wide">
+            NEW SEASON DROP
+          </h1>
+
+          <button className="mt-6 px-6 py-2 bg-white text-black text-sm font-semibold hover:bg-black hover:text-white transition">
+            SHOP NOW
+          </button>
+
+        </div>
 
       </div>
 
