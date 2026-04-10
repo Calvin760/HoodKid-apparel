@@ -3,6 +3,7 @@ import { ShopContext } from '../context/ShopContext'
 import Title from './Title';
 import ProductItem from './ProductItem';
 import { assets } from '../assets/assets';
+import { Link } from 'react-router-dom';
 
 const BestSeller = () => {
 
@@ -36,16 +37,26 @@ const BestSeller = () => {
                 </div>
 
                 {/* Text BELOW */}
-                <div className="px-6 py-6 text-center">
+                <div className="text-center px-6 py-6 flex flex-col items-center">
                     <h1 className="text-2xl font-bold tracking-wide">
                         NEW SEASON DROP
                     </h1>
-                    <p className="text-gray-600 text-xs tracking-widest mb-2">
+
+                    {/* CTA group */}
+                    <div className="flex flex-col items-center mt-2 gap-1">
+                        <p className="text-gray-600 text-xs tracking-widest">
                         LEVEL UP YOUR LOOK
-                    </p>
-                    <button className="mt-4 px-6 py-2 bg-black text-white text-sm font-semibold">
-                        SHOP NOW
-                    </button>
+                        </p>
+
+                        <Link
+                        to="/collection"
+                        state={{ category: 'shorts', gender: 'male' }} // 👈 change based on hero
+                        >
+                        <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
+                            SHOP NOW
+                        </button>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -69,9 +80,14 @@ const BestSeller = () => {
                         BEST SELLERS
                     </h1>
 
-                    <button className="bg-white text-black px-6 py-2.5 text-sm font-medium hover:bg-black hover:text-white transition">
-                        SHOP NOW
+                <Link
+                    to="/collection"
+                    state={{ category: 'shorts', gender: 'male' }} // 👈 change based on hero
+                >
+                    <button className="mt-6 px-6 py-2 bg-white text-black text-sm font-semibold hover:bg-black hover:text-white transition">
+                    SHOP NOW
                     </button>
+                </Link>
                 </div>
             </div>
 

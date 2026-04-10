@@ -1,10 +1,12 @@
 import { assets } from "../assets/assets";
 import { Link, NavLink } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { ShopContext } from "../context/ShopContext";
 
 const Navbar = () => {
 
   const [vissible, setVissible] = useState(false)
+  const {setShowSearch} = useContext(ShopContext)
 
   useEffect(() => {
     document.body.style.overflow = vissible ? 'hidden' : 'auto'
@@ -33,7 +35,7 @@ const Navbar = () => {
               d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
           {/* Search */}
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          <svg onClick={() => setShowSearch(true)} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
             strokeWidth="1.5" stroke="currentColor"
             className="size-6 cursor-pointer">
             <path strokeLinecap="round" strokeLinejoin="round"
@@ -90,36 +92,53 @@ const Navbar = () => {
         </ul>
 
         {/* Right side */}
-        <div className='flex items-center gap-6'>
+        <div className="flex items-center gap-6">
 
           {/* Search */}
-          <div className='flex items-center border border-gray-300 rounded-full px-3 py-1 focus-within:border-black transition'>
+          <div className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full px-4 py-2 w-fit focus-within:bg-white focus-within:ring-1 focus-within:ring-black">
+
+            {/* Search Icon */}
+            <img src={assets.search_icon} className="w-3 cursor-pointer" alt="" />
+
             <input
-              type='text'
-              placeholder='Search'
-              className='outline-none text-sm bg-transparent w-32 focus:w-40 transition-all duration-300'
+              onClick={()=>setShowSearch(true)}
+              type="text"
+              placeholder="Search"
+              className="outline-none bg-transparent text-sm w-28 focus:w-44 transition-all duration-300 placeholder-gray-500"
             />
           </div>
 
-          {/* Wishlist */}
-          <Link to='/wishlist'>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" strokeWidth="1.5"
-              stroke="currentColor" className="size-6">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+          {/* ❤️ Wishlist (DESKTOP ONLY) */}
+          <Link to='/wishlist' className='relative hidden sm:block'>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
             </svg>
+            <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white rounded-full text-[8px]'>2</p>
           </Link>
 
           {/* Cart */}
-          <Link to='/cart'>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24" strokeWidth="1.5"
-              stroke="currentColor" className="size-6">
+          <Link to='/cart' className='relative'>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              strokeWidth="1.5" stroke="currentColor"
+              className="size-6">
               <path strokeLinecap="round" strokeLinejoin="round"
-                d="M2.25 3h1.386..." />
+                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
             </svg>
+            <p className='absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white text-[8px] rounded-full'>
+              5
+            </p>
           </Link>
+          {/* Profile */}
+          <div className='group relative'>
+            <img className='w-5 cursor-pointer' src={assets.profile_icon} alt="" />
+            <div className='group-hover:block hidden absolute right-0 pt-4'>
+              <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded'>
+                <p className='cursor-pointer hover:text-black'>My profile</p>
+                <p className='cursor-pointer hover:text-black'>Orders</p>
+                <p className='cursor-pointer hover:text-black'>Logout</p>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
@@ -135,6 +154,7 @@ const Navbar = () => {
           <NavLink onClick={() => setVissible(false)} className='py-2 pl-6 border' to='/collection'>COLLECTION</NavLink>
           <NavLink onClick={() => setVissible(false)} className='py-2 pl-6 border' to='/about'>ABOUT</NavLink>
           <NavLink onClick={() => setVissible(false)} className='py-2 pl-6 border' to='/contact'>CONTACT</NavLink>
+          <NavLink onClick={() => setVissible(false)} className='py-2 pl-6 border' to='/wishlist'>WISHLIST</NavLink>
         </div>
       </div>
 

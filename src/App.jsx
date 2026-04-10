@@ -13,6 +13,8 @@ import Navbar from './components/Navbar'
 import './index.css'
 import WishList from './pages/WishList'
 import TopBar from './components/TopBar'
+import Footer from './components/Footer'
+import SearchBar from './components/SearchBar'
 
 const App = () => {
 
@@ -28,6 +30,7 @@ const App = () => {
       <div className='sticky top-0 z-50 bg-white px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]'>
         
         <Navbar />
+        <SearchBar />
       </div>
 
       {/* ✅ Only content changes */}
@@ -45,7 +48,7 @@ const App = () => {
           <Route path='/wishlist' element={<WishList />} />
         </Routes>
       </div>
-
+    <Footer/>
     </div>
   )
 }
