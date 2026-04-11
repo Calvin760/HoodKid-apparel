@@ -30,3 +30,8 @@ a.active hr{
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+html {
+  font-size: 18px; /* default is 16px */
+}
+

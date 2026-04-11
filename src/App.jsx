@@ -15,6 +15,7 @@ import WishList from './pages/WishList'
 import TopBar from './components/TopBar'
 import Footer from './components/Footer'
 import SearchBar from './components/SearchBar'
+import { ToastContainer, toast } from 'react-toastify';
 
 const App = () => {
 
@@ -24,6 +25,7 @@ const App = () => {
   return (
     <div>
       <div>
+        <ToastContainer/>
         <TopBar />
       </div>
       {/* ✅ Navbar ALWAYS padded (consistent everywhere) */}

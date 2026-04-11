@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 
 const Collection = () => {
   const location = useLocation()
-  const { products } = useContext(ShopContext)
+  const { products, toggleWishlist, wishlistItems } = useContext(ShopContext)
 
   // UI state
   const [showFilters, setShowFilters] = useState(false)
@@ -45,7 +45,7 @@ const Collection = () => {
       }
     }
   }, [location.state])
-  
+
   return (
     <div className="max-w-[1400px] mx-auto px-4">
 
@@ -144,25 +144,56 @@ const Collection = () => {
         {/* PRODUCTS */}
         <section>
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filteredProducts.map(item => (
-              <ProductItem
-                key={item._id}
-                id={item._id}
-                image={item.image}
-                name={item.name}
-                price={item.price}
-              />
-            ))}
+
+            {filteredProducts.map(item => {
+
+              const isWishlisted = wishlistItems.includes(item._id)
+
+              return (
+                <div key={item._id} className="relative">
+
+                  {/* ❤️ Wishlist Icon */}
+                  <button
+                    onClick={() => toggleWishlist(item._id)}
+                    className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-sm transition hover:scale-110"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill={isWishlisted ? "black" : "none"}
+                      stroke="black"
+                      strokeWidth="1.5"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* PRODUCT (UNCHANGED) */}
+                  <ProductItem
+                    id={item._id}
+                    image={item.image}
+                    name={item.name}
+                    price={item.price}
+                  />
+
+                </div>
+              )
+            })}
+
           </div>
         </section>
       </div>
 
-      {/* MOBILE FILTER DRAWER */}
+      {/* MOBILE FILTER DRAWER (UNCHANGED) */}
       {showFilters && (
         <div className="fixed inset-0 bg-black/40 z-40 lg:hidden">
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto">
 
-            {/* HEADER */}
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold">
                 {activeFilter === 'gender'
@@ -182,7 +213,6 @@ const Collection = () => {
               </button>
             </div>
 
-            {/* BACK BUTTON */}
             {activeFilter && (
               <button
                 onClick={() => setActiveFilter(null)}
@@ -194,7 +224,6 @@ const Collection = () => {
 
             <div className="space-y-6">
 
-              {/* CATEGORY */}
               {!activeFilter && (
                 <div>
                   <h3 className="font-semibold mb-2">Category</h3>
@@ -207,7 +236,6 @@ const Collection = () => {
                 </div>
               )}
 
-              {/* GENDER */}
               {(activeFilter === null || activeFilter === 'gender') && (
                 <div>
                   <h3 className="font-semibold mb-3">Gender</h3>
@@ -220,7 +248,6 @@ const Collection = () => {
                 </div>
               )}
 
-              {/* COLOUR */}
               {(activeFilter === null || activeFilter === 'colour') && (
                 <div>
                   <h3 className="font-semibold mb-3">Colour</h3>
@@ -238,7 +265,6 @@ const Collection = () => {
                 </div>
               )}
 
-              {/* PRICE */}
               {(activeFilter === null || activeFilter === 'price') && (
                 <div>
                   <h3 className="font-semibold mb-2">Shop By Price</h3>
@@ -257,7 +283,6 @@ const Collection = () => {
                 </div>
               )}
 
-              {/* APPLY */}
               <button
                 onClick={() => {
                   setShowFilters(false)

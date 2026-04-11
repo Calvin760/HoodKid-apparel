@@ -1,43 +1,31 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
-import Title from './Title'
 import ProductItem from './ProductItem'
 
 const LatestCollection = () => {
-    const { products } = useContext(ShopContext)
+
+    const { products, toggleWishlist, wishlistItems } = useContext(ShopContext)
+
     const [latestProducts, setLatestProducts] = useState([])
-    const [wishlist, setWishlist] = useState([])
 
     useEffect(() => {
         setLatestProducts(products.slice(0, 4))
     }, [products])
 
-    const toggleWishlist = (id) => {
-        setWishlist(prev =>
-            prev.includes(id)
-                ? prev.filter(item => item !== id)
-                : [...prev, id]
-        )
-    }
-
     return (
         <div className="my-10 px-4 sm:px-0">
-            {/* Title */}
-            {/* <div className="text-center py-8 text-3xl">
-                <Title text1={'LATEST'} text2={'COLLECTIONS'} />
-                <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600">
-                    Lorem ipsum is simply dummy text of the printing and typesetting industry.
-                </p>
-            </div> */}
 
-            {/* Products Grid */}
+            {/* PRODUCTS GRID */}
             <div className="max-w-[1200px] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+
                 {latestProducts.map((item, index) => {
-                    const isWishlisted = wishlist.includes(item._id)
+
+                    const isWishlisted = wishlistItems.includes(item._id)
 
                     return (
                         <div key={index} className="relative group">
-                            {/* ❤️ Wishlist Button */}
+
+                            {/* ❤️ WISHLIST BUTTON */}
                             <button
                                 onClick={() => toggleWishlist(item._id)}
                                 className="absolute top-2 right-2 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-sm transition hover:scale-110"
@@ -58,16 +46,18 @@ const LatestCollection = () => {
                                 </svg>
                             </button>
 
-                            {/* Product */}
+                            {/* PRODUCT CARD */}
                             <ProductItem
                                 id={item._id}
                                 image={item.image}
                                 name={item.name}
                                 price={item.price}
                             />
+
                         </div>
                     )
                 })}
+
             </div>
         </div>
     )
