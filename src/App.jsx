@@ -7,6 +7,7 @@ import Contact from './pages/Contact'
 import Cart from './pages/Cart'
 import Product from './pages/Product'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import PlaceOrder from './pages/PlaceOrder'
 import Orders from './pages/Orders'
 import Navbar from './components/Navbar'
@@ -16,6 +17,12 @@ import TopBar from './components/TopBar'
 import Footer from './components/Footer'
 import SearchBar from './components/SearchBar'
 import { ToastContainer, toast } from 'react-toastify';
+import Account from './pages/Account'
+import Sales from './pages/Sales'
+import Admin from './pages/Admin'
+import AdminRoute from './components/AdminRoute'
+import AdminOrders from './pages/AdminOrders'
+import PaymentSuccess from './pages/PaymentSuccess'
 
 const App = () => {
 
@@ -45,9 +52,22 @@ const App = () => {
           <Route path='/product/:productId' element={<Product />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
           <Route path='/place-order' element={<PlaceOrder />} />
           <Route path='/orders' element={<Orders />} />
           <Route path='/wishlist' element={<WishList />} />
+          <Route path='/account' element={<Account/>} />
+          <Route path='/sales' element={<Sales />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }
+          />
+          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
         </Routes>
       </div>
     <Footer/>

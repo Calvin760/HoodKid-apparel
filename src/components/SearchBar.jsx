@@ -14,11 +14,21 @@ const SearchBar = () => {
         products
     } = useContext(ShopContext)
 
-    const trending = ['Air Force 1', 'Hoodies', 'Running Shoes', 'Nike Tech']
-    const popular = ['Black hoodie', 'White sneakers', 'Tracksuit', 'Slides']
+    const trending = ['Caution capsule', 'Hoodies', 'Mini-skirt', 'Leggings set']
+    const popular = ['Black hoodie', 'White sneakers', 'Tracksuit', 'Cap']
 
     const [page, setPage] = useState(0)
     const ITEMS_PER_PAGE = 4
+
+    const formatImages = (imgs) => {
+        if (!imgs || imgs.length === 0) return []
+
+        return imgs.map(img =>
+            img.startsWith("http")
+                ? img
+                : `http://localhost:5000/${img}`
+        )
+    }
 
     const results = useMemo(() => {
         if (!search.trim()) return []
@@ -41,7 +51,7 @@ const SearchBar = () => {
                 <div className="flex items-center gap-4 w-full max-w-3xl">
 
                     {/* SEARCH BAR */}
-                    <div className="flex items-center gap-3 bg-gray-100 rounded-full px-6 py-3 flex-1">
+                    <div className="flex items-center gap-3 bg-gray-100 px-6 py-3 flex-1">
 
                         <img src={assets.search_icon} className="w-4" alt="" />
 
@@ -85,7 +95,7 @@ const SearchBar = () => {
                                             setSearch(item)
                                             setPage(0)
                                         }}
-                                        className="px-4 py-2 bg-gray-100 rounded-full text-sm hover:bg-gray-200 transition"
+                                        className="px-4 py-2 bg-gray-100 text-sm hover:bg-gray-200 transition"
                                     >
                                         {item}
                                     </button>
@@ -104,7 +114,7 @@ const SearchBar = () => {
                                             setSearch(item)
                                             setPage(0)
                                         }}
-                                        className="px-4 py-2 bg-gray-100 rounded-full text-sm hover:bg-gray-200 transition"
+                                        className="px-4 py-2 bg-gray-100  text-sm hover:bg-gray-200 transition"
                                     >
                                         {item}
                                     </button>
@@ -133,8 +143,12 @@ const SearchBar = () => {
                                 >
                                     <ProductItem
                                         id={item._id}
-                                        image={item.image}
                                         name={item.name}
+                                        image={
+                                            item.colours?.length && item.colours[0].images?.length
+                                                ? formatImages(item.colours[0].images)
+                                                : formatImages(item.image)
+                                        }
                                         price={item.price}
                                     />
                                 </Link>
@@ -154,8 +168,12 @@ const SearchBar = () => {
                                     >
                                         <ProductItem
                                             id={item._id}
-                                            image={item.image}
                                             name={item.name}
+                                            image={
+                                                item.colours?.length && item.colours[0].images?.length
+                                                    ? formatImages(item.colours[0].images)
+                                                    : formatImages(item.image)
+                                            }
                                             price={item.price}
                                         />
                                     </Link>

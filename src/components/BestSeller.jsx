@@ -6,13 +6,32 @@ import ProductItem from './ProductItem'
 
 const BestSeller = () => {
 
-    const { products, toggleWishlist, wishlistItems } = useContext(ShopContext)
-    const [bestSeller, setBestSeller] = useState([])
+    const {
+        products,
+        toggleWishlist,
+        wishlistIds // ✅ backend source
+    } = useContext(ShopContext)
 
+    const [bestSeller, setBestSeller] = useState([])
+    
+    const formatImages = (imgs) => {
+        if (!imgs || imgs.length === 0) return []
+
+        return imgs.map(img =>
+            img.startsWith("http")
+                ? img
+                : `http://localhost:5000/${img}`
+        )
+    }
     useEffect(() => {
         const bestProduct = products.filter((item) => item.bestseller)
-        setBestSeller(bestProduct.slice(4, 8))
+        setBestSeller(bestProduct.slice(0, 4))
     }, [products])
+
+    // helper: check wishlist status
+    const isWishlisted = (productId) => {
+        return wishlistIds.includes(productId)
+    }
 
     return (
         <div className='my-10'>
@@ -88,12 +107,11 @@ const BestSeller = () => {
 
                     {bestSeller.map((item) => {
 
-                        const isWishlisted = wishlistItems.includes(item._id)
+                        const liked = isWishlisted(item._id)
 
                         return (
                             <div key={item._id} className='min-w-full px-4 relative'>
 
-                                {/* ❤️ Wishlist Button */}
                                 <button
                                     onClick={() => toggleWishlist(item._id)}
                                     className="absolute top-4 right-6 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-sm transition hover:scale-110"
@@ -101,7 +119,7 @@ const BestSeller = () => {
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 24 24"
-                                        fill={isWishlisted ? "black" : "none"}
+                                        fill={liked ? "black" : "none"}
                                         stroke="black"
                                         strokeWidth="1.5"
                                         className="w-5 h-5"
@@ -117,7 +135,11 @@ const BestSeller = () => {
                                 <ProductItem
                                     id={item._id}
                                     name={item.name}
-                                    image={item.image}
+                                    image={
+                                        item.colours?.length && item.colours[0].images?.length
+                                            ? formatImages(item.colours[0].images)
+                                            : formatImages(item.image)
+                                    }
                                     price={item.price}
                                 />
                             </div>
@@ -131,12 +153,11 @@ const BestSeller = () => {
 
                     {bestSeller.map((item) => {
 
-                        const isWishlisted = wishlistItems.includes(item._id)
+                        const liked = isWishlisted(item._id)
 
                         return (
                             <div key={item._id} className='relative group'>
 
-                                {/* ❤️ Wishlist Button */}
                                 <button
                                     onClick={() => toggleWishlist(item._id)}
                                     className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow-sm transition hover:scale-110"
@@ -144,7 +165,7 @@ const BestSeller = () => {
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 24 24"
-                                        fill={isWishlisted ? "black" : "none"}
+                                        fill={liked ? "black" : "none"}
                                         stroke="black"
                                         strokeWidth="1.5"
                                         className="w-5 h-5"
@@ -160,10 +181,13 @@ const BestSeller = () => {
                                 <ProductItem
                                     id={item._id}
                                     name={item.name}
-                                    image={item.image}
+                                    image={
+                                        item.colours?.length && item.colours[0].images?.length
+                                            ? formatImages(item.colours[0].images)
+                                            : formatImages(item.image)
+                                    }
                                     price={item.price}
                                 />
-
                             </div>
                         )
                     })}

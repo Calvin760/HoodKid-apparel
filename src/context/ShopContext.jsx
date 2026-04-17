@@ -1,123 +1,175 @@
-import { createContext, useMemo, useState } from "react";
-import { products } from "../assets/assets";
+import { createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
 
-    const currency = 'R';
+    const currency = "R";
     const delivery_fee = 90;
 
-    const [search, setSearch] = useState('');
-    const [showSearch, setShowSearch] = useState(false);
+    // ================= PRODUCTS =================
+    const [products, setProducts] = useState([]);
+
+    // ================= CART (LOCAL) =================
     const [cartItems, setCartItems] = useState({});
-    const [wishlistItems, setWishlistItems] = useState([]);
+
+    // ================= WISHLIST (BACKEND) =================
+    const [wishlistProducts, setWishlistProducts] = useState([]);
+
+    const [search, setSearch] = useState("");
+    const [showSearch, setShowSearch] = useState(false);
+
+    // ================= FETCH PRODUCTS =================
+    const fetchProducts = async () => {
+        try {
+            const { data } = await axios.get("http://localhost:5000/api/products");
+            if (data.success) setProducts(data.products);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    // ================= FETCH WISHLIST =================
+    const fetchWishlist = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const { data } = await axios.get(
+                "http://localhost:5000/api/users/wishlist",
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            if (data.success) setWishlistProducts(data.wishlist);
+
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+        fetchWishlist();
+    }, []);
+
+    // ================= WISHLIST =================
+    const toggleWishlist = async (productId) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                toast.error("Login required");
+                return;
+            }
+
+            const { data } = await axios.post(
+                "http://localhost:5000/api/users/wishlist",
+                { productId },
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            if (data.success) {
+                await fetchWishlist();
+            }
+
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    // ✅ IMPORTANT: unified ID system
+    const wishlistIds = wishlistProducts.map(p => p._id);
+
+    const getWishListCount = () => wishlistIds.length;
 
     // ================= CART =================
-    const addToCart = (itemId, size) => {
-
-        if (!size) {
-            toast.error("Select Size");
-            return false;
-        }
-
-        let cartData = structuredClone(cartItems);
-
-        if (cartData[itemId]) {
-            if (cartData[itemId][size]) {
-                cartData[itemId][size] += 1;
-            } else {
-                cartData[itemId][size] = 1;
-            }
-        } else {
-            cartData[itemId] = {};
-            cartData[itemId][size] = 1;
-        }
-
-        setCartItems(cartData);
-        return true;
-    };
-
-    const getCartCount = () => {
-        let totalCount = 0;
-
-        for (const productId in cartItems) {
-            const sizes = cartItems[productId];
-
-            for (const size in sizes) {
-                const quantity = sizes[size];
-                if (quantity > 0) totalCount += quantity;
-            }
-        }
-
-        return totalCount;
-    };
-
-    const updateQuantity = (productId, size, quantity) => {
-        setCartItems(prev => {
+    const addToCart = (productId, size, color) => {
+        setCartItems((prev) => {
             const updated = { ...prev };
 
             if (!updated[productId]) updated[productId] = {};
+            if (!updated[productId][size]) updated[productId][size] = {};
+            if (!updated[productId][size][color]) {
+                updated[productId][size][color] = 0;
+            }
+
+            updated[productId][size][color] += 1;
+
+            return updated;
+        });
+    };
+
+    const getCartCount = () => {
+        let total = 0;
+
+        for (const productId in cartItems) {
+            for (const size in cartItems[productId]) {
+                for (const color in cartItems[productId][size]) {
+                    total += cartItems[productId][size][color];
+                }
+            }
+        }
+
+        return total;
+    };
+
+    const updateQuantity = (productId, size, color, quantity) => {
+        setCartItems((prev) => {
+            const updated = { ...prev };
+
+            if (!updated[productId]?.[size]?.[color]) return prev;
 
             if (quantity <= 0) {
-                delete updated[productId][size];
+                delete updated[productId][size][color];
+
+                if (Object.keys(updated[productId][size]).length === 0) {
+                    delete updated[productId][size];
+                }
+
+                if (Object.keys(updated[productId]).length === 0) {
+                    delete updated[productId];
+                }
+
             } else {
-                updated[productId][size] = quantity;
+                updated[productId][size][color] = quantity;
             }
 
             return updated;
         });
     };
 
-    const removeFromCart = (productId, size) => {
-        updateQuantity(productId, size, 0);
+    const removeFromCart = (productId, size, color) => {
+        updateQuantity(productId, size, color, 0);
     };
-
-    // ================= WISHLIST =================
-    const toggleWishlist = (productId) => {
-        setWishlistItems(prev => {
-            if (prev.includes(productId)) {
-                toast.error("Removed from Favourites");
-                return prev.filter(id => id !== productId);
-                
-            } else {
-                toast.success("Added To Favourites");
-                return [...prev, productId];
-            }
-        });
-    };
-
-    const wishlistProducts = useMemo(() => {
-        return products.filter(p => wishlistItems.includes(p._id));
-    }, [wishlistItems]);
-
-    const getWishListCount = () => {
-        if (!Array.isArray(wishlistItems)) return 0;
-        return wishlistItems.length;
-    };
-
-    // ================= CONTEXT VALUE =================
+    // ================= CONTEXT =================
     const value = {
         products,
         currency,
         delivery_fee,
 
-        search,
-        setSearch,
-        showSearch,
-        setShowSearch,
-
+        // CART
         cartItems,
         addToCart,
         getCartCount,
         updateQuantity,
         removeFromCart,
 
-        wishlistItems,          // ✅ IMPORTANT
+        // WISHLIST
+        wishlistProducts,
+        wishlistIds,
         toggleWishlist,
-        wishlistProducts,        // ✅ ready-to-use data
-        getWishListCount
+        getWishListCount,
+
+        search,
+        setSearch,
+        showSearch,
+        setShowSearch,
     };
 
     return (

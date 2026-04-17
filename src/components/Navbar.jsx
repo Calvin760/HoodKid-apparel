@@ -1,211 +1,305 @@
 import { assets } from "../assets/assets";
-import { Link, NavLink } from 'react-router-dom';
-import { useState, useEffect, useContext } from 'react';
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useContext } from "react";
 import { ShopContext } from "../context/ShopContext";
+import {
+  FiX,
+  FiSearch,
+  FiShoppingCart,
+  FiChevronRight,
+  FiHeart,
+  FiPackage,
+  FiUser
+} from "react-icons/fi";
+import axios from "axios";
 
 const Navbar = () => {
+  const [visible, setVisible] = useState(false);
+  const { setShowSearch, getCartCount, getWishListCount, search } =
+    useContext(ShopContext);
 
-  const [vissible, setVissible] = useState(false)
-  const { setShowSearch, getCartCount, getWishListCount } = useContext(ShopContext)
+  const navigate = useNavigate();
+  const location = useLocation();
 
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setUser(null);
+    navigate("/login");
+  };
+
+  /* ================= SYNC TOKEN ================= */
   useEffect(() => {
-    document.body.style.overflow = vissible ? 'hidden' : 'auto'
-  }, [vissible])
+    const syncToken = () => {
+      setToken(localStorage.getItem("token"));
+    };
+
+    window.addEventListener("storage", syncToken);
+
+    // also check on focus (important for same-tab login)
+    window.addEventListener("focus", syncToken);
+
+    return () => {
+      window.removeEventListener("storage", syncToken);
+      window.removeEventListener("focus", syncToken);
+    };
+  }, []);
+
+  /* ================= FETCH USER ================= */
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        if (!token) {
+          setUser(null);
+          return;
+        }
+
+        const { data } = await axios.get(
+          "http://localhost:5000/api/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setUser(data.user || data);
+      } catch (err) {
+        console.log(err);
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, [token]); // ✅ KEY FIX
+
+  /* ================= LOCK BODY SCROLL ================= */
+  useEffect(() => {
+    document.body.style.overflow = visible ? "hidden" : "auto";
+  }, [visible]);
+
+  /* ================= CLOSE SIDEBAR ON ROUTE CHANGE ================= */
+  useEffect(() => {
+    setVisible(false);
+  }, [location.pathname]);
 
   return (
-    <div className={`${!vissible ? 'sticky top-0' : 'relative'} z-50 bg-white font-medium`}>
+    <div className={`${!visible ? "sticky top-0" : "relative"} z-50 bg-white font-medium`}>
 
       {/* ================= MOBILE NAV ================= */}
-      <div className="flex items-center justify-between px-4 py-5 sm:hidden">
-
-        {/* LEFT */}
-        <div className="flex items-center gap-5">
-
-          <svg
-            onClick={() => setVissible(true)}
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="size-7"
-          >
+      <div className="flex items-center justify-between px-4 py-4 sm:hidden">
+        <div className="flex items-center gap-4">
+          <svg onClick={() => setVisible(true)} className="w-6 h-6 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
 
-          <svg
+          <FiSearch
+            className="w-6 h-6 cursor-pointer"
             onClick={() => setShowSearch(true)}
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="size-7"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="m21 21-4.35-4.35m1.6-5.4a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-          </svg>
-
+          />
         </div>
 
-        {/* CENTER */}
-        <Link to='/'>
-          <h1 className="text-black text-xl font-bold tracking-wide">
-            HOODKID.
-          </h1>
+        <Link to="/">
+          <h1 className="text-lg font-semibold tracking-wide">HOODKID.</h1>
         </Link>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-5">
-
-          <Link to='/cart' className='relative'>
-            <svg className="size-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-            </svg>
-            <p className='absolute right-[-6px] bottom-[-6px] w-4 text-center leading-4 bg-red-500 text-white text-[9px] rounded-full'>
+        <div className="flex items-center gap-4">
+          <Link to="/cart" className="relative">
+            <FiShoppingCart className="w-6 h-6" />
+            <span className="absolute -right-1.5 -bottom-1.5 w-4 h-4 flex items-center justify-center text-[9px] bg-black text-white">
               {getCartCount()}
-            </p>
+            </span>
           </Link>
 
-          <img className='w-6 cursor-pointer' src={assets.profile_icon} alt="" />
-
+          <Link to="/account" className="relative">
+            <FiUser className="w-6 h-6" />
+          </Link>
         </div>
       </div>
 
       {/* ================= DESKTOP NAV ================= */}
       <div className="hidden sm:flex items-center justify-between py-6 px-2">
-
-        {/* Logo */}
-        <Link to='/'>
-          <h1 className="text-black text-2xl font-bold tracking-wide">
-            HOODKID.
-          </h1>
+        <Link to="/">
+          <h1 className="text-2xl font-bold tracking-wide">HOODKID.</h1>
         </Link>
 
-        {/* LINKS */}
-        <ul className="flex gap-8 text-base font-medium">
-
+        <ul className="flex gap-8 text-base">
           {[
             { to: "/", label: "Home" },
             { to: "/collection", label: "Collection" },
             { to: "/about", label: "About" },
             { to: "/contact", label: "Contact" }
           ].map(link => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className={({ isActive }) =>
-                `relative pb-1 transition ${isActive ? 'text-black' : 'text-gray-500'}`
-              }
-            >
+            <NavLink key={link.to} to={link.to} className="relative pb-1">
               {({ isActive }) => (
                 <>
-                  {link.label}
-                  <span
-                    className={`absolute left-0 bottom-0 h-[2px] bg-black transition-all duration-300 ${isActive ? 'w-full' : 'w-0'
-                      }`}
-                  />
+                  <span className={isActive ? "text-black" : "text-gray-500"}>
+                    {link.label}
+                  </span>
+                  <span className={`absolute left-0 bottom-0 h-[2px] bg-black transition-all ${isActive ? "w-full" : "w-0"}`} />
                 </>
               )}
             </NavLink>
           ))}
-
         </ul>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-7">
+        <div className="flex items-center gap-6">
 
           {/* SEARCH */}
-          <div className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full px-4 py-2">
-
-            <img src={assets.search_icon} className="w-4 cursor-pointer" alt="" />
-
+          <div className="flex items-center gap-2 bg-gray-100 px-4 py-2">
+            <img src={assets.search_icon} className="w-4" alt="" />
             <input
+              readOnly
               onClick={() => setShowSearch(true)}
               type="text"
               placeholder="Search"
-              className="outline-none bg-transparent text-sm w-32 focus:w-52 transition-all"
+              value={search}
+              className="outline-none bg-transparent text-sm w-28"
             />
-
           </div>
 
           {/* WISHLIST */}
-          <Link to='/wishlist' className='relative'>
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-6"
-              fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-            </svg>
-            <p className='absolute right-[-6px] bottom-[-6px] w-4 text-center leading-4 bg-red-500 text-white text-[9px] rounded-full'>
+          <Link to="/wishlist" className="relative">
+            <FiHeart className="w-6 h-6" />
+            <span className="absolute -right-1.5 -bottom-1.5 w-4 h-4 flex items-center justify-center text-[9px] bg-black text-white">
               {getWishListCount()}
-            </p>
+            </span>
           </Link>
 
           {/* CART */}
-          <Link to='/cart' className='relative'>
-            <svg xmlns="http://www.w3.org/2000/svg" className="size-6"
-              fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-            </svg>
-            <p className='absolute right-[-6px] bottom-[-6px] w-4 text-center leading-4 bg-red-500 text-white text-[9px] rounded-full'>
+          <Link to="/cart" className="relative">
+            <FiShoppingCart className="w-6 h-6" />
+            <span className="absolute -right-1.5 -bottom-1.5 w-4 h-4 flex items-center justify-center text-[9px] bg-black text-white">
               {getCartCount()}
-            </p>
+            </span>
           </Link>
 
           {/* PROFILE */}
-          <div className='group relative'>
-            <img className='w-6 cursor-pointer' src={assets.profile_icon} alt="" />
+          {user ? (
+            <div className="group relative">
+              <FiUser className="w-7 h-7" />
 
-            <div className='group-hover:block hidden absolute right-0 pt-4'>
-              <div className='flex flex-col gap-2 w-40 py-3 px-5 bg-white text-black border shadow-md rounded'>
-
-                <Link to='/profile' className='hover:opacity-70'>
-                  My Profile
-                </Link>
-
-                <Link to='/orders' className='hover:opacity-70'>
-                  Orders
-                </Link>
-
-                <button
-                  onClick={() => {
-                    // later: clear auth token / session
-                    console.log("logout")
-                  }}
-                  className='text-left hover:opacity-70'
-                >
-                  Logout
-                </button>
-
+              <div className="group-hover:block hidden absolute right-0 pt-4">
+                <div className="flex flex-col gap-2 w-44 py-3 px-5 bg-white text-black border shadow-md">
+                  <Link to="/account" className="hover:opacity-70">
+                    My Profile
+                  </Link>
+                  <Link to="/orders" className="hover:opacity-70">
+                    Orders
+                  </Link>
+                  <button onClick={logout} className="text-left hover:opacity-70">
+                    Logout
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="border px-4 py-2 text-sm"
+            >
+              Login
+            </button>
+          )}
 
         </div>
       </div>
 
-      {/* ================= SIDEBAR ================= */}
-      <div className={`fixed top-0 right-0 h-full w-full bg-white transform transition-transform duration-300 ${vissible ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className='flex flex-col text-gray-700 text-base'>
-          <div onClick={() => setVissible(false)} className='flex items-center gap-4 p-4 text-lg'>
-            <img className='h-5 rotate-180' src={assets.dropdown_icon} alt="" />
-            <p>Back</p>
+      {/* ================= MOBILE SIDEBAR ================= */}
+      <div className={`fixed inset-0 z-50 ${visible ? "block" : "hidden"}`}>
+        <div
+          onClick={() => setVisible(false)}
+          className="absolute inset-0 bg-black/40"
+        />
+
+        <div
+          className={`absolute top-0 left-0 h-full w-[85%] max-w-sm bg-white shadow-xl transition-transform duration-300 ${visible ? "translate-x-0" : "-translate-x-full"}`}
+        >
+          <div className="flex items-center justify-between px-4 py-4 border-b">
+            <FiX size={22} onClick={() => setVisible(false)} className="cursor-pointer" />
           </div>
 
-          <NavLink onClick={() => setVissible(false)} className='py-3 pl-6 border' to='/'>HOME</NavLink>
-          <NavLink onClick={() => setVissible(false)} className='py-3 pl-6 border' to='/collection'>COLLECTION</NavLink>
-          <NavLink onClick={() => setVissible(false)} className='py-3 pl-6 border' to='/about'>ABOUT</NavLink>
-          <NavLink onClick={() => setVissible(false)} className='py-3 pl-6 border' to='/contact'>CONTACT</NavLink>
-          <NavLink onClick={() => setVissible(false)} className='py-3 pl-6 border' to='/wishlist'>WISHLIST</NavLink>
+          <div className="flex flex-col py-2">
+            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Menu
+            </div>
+
+            {[
+              { to: "/", label: "Home" },
+              { to: "/collection", label: "Collections", arrow: true },
+              { to: "/account", label: "My Account", arrow: true },
+            ].map((item, i) => (
+              <NavLink
+                key={i}
+                to={item.to}
+                className={({ isActive }) =>
+                  `px-4 py-3 flex items-center justify-between rounded-md mx-2 transition
+        ${isActive
+                    ? "bg-gray-100 font-semibold"
+                    : "hover:bg-gray-50"
+                  }`
+                }
+              >
+                <span>{item.label}</span>
+                {item.arrow && <FiChevronRight className="text-gray-400" />}
+              </NavLink>
+            ))}
+          </div>
+
+          <div className="my-2 border-t border-gray-100" />
+
+          <div className="flex flex-col py-2">
+            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Account & Activity
+            </div>
+
+            <NavLink to="/cart" className="flex items-center gap-3 px-4 py-3 mx-2 rounded-md hover:bg-gray-50 transition">
+              <FiShoppingCart className="text-gray-600" />
+              <span className="flex-1">Cart</span>
+              <span className="text-sm text-gray-500">{getCartCount()}</span>
+            </NavLink>
+
+            <NavLink to="/wishlist" className="flex items-center gap-3 px-4 py-3 mx-2 rounded-md hover:bg-gray-50 transition">
+              <FiHeart className="text-gray-600" />
+              <span className="flex-1">Favourites</span>
+              <span className="text-sm text-gray-500">{getWishListCount()}</span>
+            </NavLink>
+
+            <NavLink to="/orders" className="flex items-center gap-3 px-4 py-3 mx-2 rounded-md hover:bg-gray-50 transition">
+              <FiPackage className="text-gray-600" />
+              <span className="flex-1">Orders</span>
+            </NavLink>
+          </div>
+
+          <div className="absolute bottom-0 left-0 w-full border-t px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white text-sm">
+                {(user?.name?.charAt(0) || "U").toUpperCase()}
+              </div>
+              <p className="font-medium">{user?.name || ""}</p>
+            </div>
+
+            {user ? (
+              <button onClick={logout} className="text-sm hover:underline">
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="text-sm hover:underline"
+              >
+                Login
+              </button>
+            )}
+          </div>
         </div>
       </div>
-
     </div>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

@@ -1,16 +1,30 @@
 import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 
 const Orders = () => {
 
   const [orders, setOrders] = useState([])
 
-  // 🔥 FETCH ORDERS
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/order/all")
-        const data = await res.json()
-        setOrders(data.reverse()) // latest first
+
+        const token = localStorage.getItem("token")
+        if (!token) return
+
+        const { data } = await axios.get(
+          "http://localhost:5000/api/orders/my-orders",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        )
+
+        if (data.success) {
+          setOrders(data.orders.reverse())
+        }
+
       } catch (err) {
         console.log(err)
       }
@@ -38,43 +52,61 @@ const Orders = () => {
 
           <div key={order._id} className="border p-6 rounded-lg">
 
-            {/* 🔥 HEADER */}
+            {/* ================= HEADER ================= */}
             <div className="flex flex-col sm:flex-row sm:justify-between mb-4 gap-2">
 
               <div>
-                <p className="font-medium">Order #{order._id}</p>
+                <p className="font-medium">
+                  Order #{order._id}
+                </p>
+
                 <p className="text-sm text-gray-500">
                   {new Date(order.createdAt).toLocaleString()}
                 </p>
               </div>
 
               <div className="text-sm text-right">
+
                 <p>
                   Payment:
-                  <span className={`ml-2 font-medium ${order.paymentStatus === "paid" ? "text-green-600" : "text-red-500"
-                    }`}>
-                    {order.paymentStatus}
+                  <span className="ml-2 font-medium text-yellow-600">
+                    Pending
                   </span>
                 </p>
 
                 <p>
-                  Delivery:
+                  Status:
                   <span className="ml-2 font-medium">
-                    {order.deliveryStatus}
+                    {order.status}
                   </span>
                 </p>
+
               </div>
 
             </div>
 
-            {/* 🔥 ITEMS */}
+            {/* ================= CUSTOMER + DELIVERY INFO ================= */}
+            <div className="text-sm text-gray-700 mb-4 space-y-1">
+
+              <p><span className="font-medium">Name:</span> {order.shippingInfo?.name}</p>
+              <p><span className="font-medium">Phone:</span> {order.shippingInfo?.phone}</p>
+              <p><span className="font-medium">Address:</span> {order.shippingInfo?.address}</p>
+              <p><span className="font-medium">City:</span> {order.shippingInfo?.city}</p>
+
+              {order.shippingInfo?.notes && (
+                <p><span className="font-medium">Notes:</span> {order.shippingInfo.notes}</p>
+              )}
+
+            </div>
+
+            {/* ================= ITEMS ================= */}
             <div className="space-y-3">
 
               {order.items.map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
 
                   <span>
-                    {item.name} ({item.size}) x {item.quantity}
+                    {item.name} ({item.size}{item.color ? ` / ${item.color}` : ""}) x {item.quantity}
                   </span>
 
                   <span>
@@ -86,7 +118,7 @@ const Orders = () => {
 
             </div>
 
-            {/* 🔥 TOTAL */}
+            {/* ================= TOTAL ================= */}
             <div className="border-t mt-4 pt-3 flex justify-between font-medium">
               <span>Total</span>
               <span>R {order.total}</span>

@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom'
 
 const Collection = () => {
   const location = useLocation()
-  const { products, toggleWishlist, wishlistItems } = useContext(ShopContext)
+  const { products, toggleWishlist, wishlistIds, search } = useContext(ShopContext)
 
   // UI state
   const [showFilters, setShowFilters] = useState(false)
@@ -18,22 +18,82 @@ const Collection = () => {
   const [colour, setColour] = useState('all')
 
   const colours = ['all', 'black', 'white', 'red', 'blue', 'green', 'brown', 'yellow', 'pink', 'purple', 'grey']
+  
+  const formatImages = (imgs) => {
+    if (!imgs || imgs.length === 0) return []
+
+    return imgs.map(img =>
+      img.startsWith("http")
+        ? img
+        : `http://localhost:5000/${img}`
+    )
+  }
 
   const filteredProducts = useMemo(() => {
     let list = [...products]
 
-    if (category !== 'all') list = list.filter(p => p.category === category)
-    if (gender !== 'all') list = list.filter(p => p.gender === gender)
-    if (colour !== 'all') list = list.filter(p => p.colour === colour)
+    // 🔍 SEARCH (case-insensitive)
+    if (search.trim() !== "") {
+      const q = search.toLowerCase()
+      list = list.filter(p =>
+        p.name?.toLowerCase().includes(q)
+      )
+    }
 
+    // 📦 CATEGORY (array + case-insensitive)
+    // 📦 CATEGORY (string OR array, case-insensitive)
+    if (category !== 'all') {
+      const selected = category.toLowerCase()
+
+      list = list.filter(p => {
+        if (!p.category) return false
+
+        // if category is an array
+        if (Array.isArray(p.category)) {
+          return p.category.some(cat =>
+            String(cat).toLowerCase() === selected
+          )
+        }
+
+        // if category is a string
+        return String(p.category).toLowerCase() === selected
+      })
+    }
+
+    // 🚻 GENDER (case-insensitive)
+    if (gender !== 'all') {
+      const selected = gender.toLowerCase()
+
+      list = list.filter(p =>
+        p.gender?.toLowerCase() === selected
+      )
+    }
+
+    // 🎨 COLOUR (from colours array)
+    if (colour !== 'all') {
+      const selected = colour.toLowerCase()
+
+      list = list.filter(p =>
+        Array.isArray(p.colours) &&
+        p.colours.some(c =>
+          c.name?.toLowerCase() === selected
+        )
+      )
+    }
+
+    // 💰 PRICE
     if (priceRange !== 'all') {
-      if (priceRange === 'low') list = list.filter(p => p.price < 1000)
-      if (priceRange === 'mid') list = list.filter(p => p.price >= 1000 && p.price <= 3000)
-      if (priceRange === 'high') list = list.filter(p => p.price > 3000)
+      list = list.filter(p => {
+        const price = Number(p.price)
+        if (priceRange === 'low') return price < 1000
+        if (priceRange === 'mid') return price >= 1000 && price <= 3000
+        if (priceRange === 'high') return price > 3000
+        return true
+      })
     }
 
     return list
-  }, [products, category, gender, priceRange, colour])
+  }, [products, category, gender, priceRange, colour, search])
 
   useEffect(() => {
     if (location.state) {
@@ -61,7 +121,7 @@ const Collection = () => {
             setShowFilters(true)
             setActiveFilter(null)
           }}
-          className="flex items-center gap-2 border rounded-full px-4 py-2 text-sm whitespace-nowrap"
+          className="flex items-center gap-2 border px-4 py-2 text-sm whitespace-nowrap"
         >
           ☰ Filters
         </button>
@@ -71,7 +131,7 @@ const Collection = () => {
             setShowFilters(true)
             setActiveFilter('gender')
           }}
-          className="border rounded-full px-4 py-2 text-sm whitespace-nowrap"
+          className="border px-4 py-2 text-sm whitespace-nowrap"
         >
           Gender ▾
         </button>
@@ -81,7 +141,7 @@ const Collection = () => {
             setShowFilters(true)
             setActiveFilter('colour')
           }}
-          className="border rounded-full px-4 py-2 text-sm whitespace-nowrap"
+          className="border px-4 py-2 text-sm whitespace-nowrap"
         >
           Colour ▾
         </button>
@@ -91,7 +151,7 @@ const Collection = () => {
             setShowFilters(true)
             setActiveFilter('price')
           }}
-          className="border rounded-full px-4 py-2 text-sm whitespace-nowrap"
+          className="border px-4 py-2 text-sm whitespace-nowrap"
         >
           Price ▾
         </button>
@@ -105,7 +165,7 @@ const Collection = () => {
 
             <div>
               <h3 className="font-semibold mb-3">Category</h3>
-              {['all', 'shorts', 'tops', 'hoodies'].map(item => (
+              {['all', 'shorts', 'tops', 'hoodies', 'pants'].map(item => (
                 <label key={item} className="flex items-center gap-2">
                   <input type="radio" checked={category === item} onChange={() => setCategory(item)} />
                   <span className="capitalize">{item}</span>
@@ -115,7 +175,7 @@ const Collection = () => {
 
             <div>
               <h3 className="font-semibold mb-3">Gender</h3>
-              {['all', 'unisex', 'male', 'female'].map(item => (
+              {['all', 'unisex', 'men', 'women'].map(item => (
                 <label key={item} className="flex items-center gap-2">
                   <input type="radio" checked={gender === item} onChange={() => setGender(item)} />
                   <span className="capitalize">{item}</span>
@@ -147,7 +207,7 @@ const Collection = () => {
 
             {filteredProducts.map(item => {
 
-              const isWishlisted = wishlistItems.includes(item._id)
+              const isWishlisted = wishlistIds.includes(item._id)
 
               return (
                 <div key={item._id} className="relative">
@@ -176,8 +236,12 @@ const Collection = () => {
                   {/* PRODUCT (UNCHANGED) */}
                   <ProductItem
                     id={item._id}
-                    image={item.image}
                     name={item.name}
+                    image={
+                      item.colours?.length && item.colours[0].images?.length
+                        ? formatImages(item.colours[0].images)
+                        : formatImages(item.image)
+                    }
                     price={item.price}
                   />
 
@@ -187,6 +251,7 @@ const Collection = () => {
 
           </div>
         </section>
+        
       </div>
 
       {/* MOBILE FILTER DRAWER (UNCHANGED) */}
@@ -227,7 +292,7 @@ const Collection = () => {
               {!activeFilter && (
                 <div>
                   <h3 className="font-semibold mb-2">Category</h3>
-                  {['all', 'shorts', 'tops', 'hoodies'].map(item => (
+                  {['all', 'shorts', 'tops', 'hoodies', 'pants'].map(item => (
                     <label key={item} className="flex items-center gap-2 py-1">
                       <input type="radio" checked={category === item} onChange={() => setCategory(item)} />
                       <span className="capitalize">{item}</span>
@@ -239,7 +304,7 @@ const Collection = () => {
               {(activeFilter === null || activeFilter === 'gender') && (
                 <div>
                   <h3 className="font-semibold mb-3">Gender</h3>
-                  {['all', 'unisex', 'male', 'female'].map(item => (
+                  {['all', 'unisex', 'men', 'women'].map(item => (
                     <label key={item} className="flex items-center gap-2">
                       <input type="radio" checked={gender === item} onChange={() => setGender(item)} />
                       <span className="capitalize">{item}</span>
@@ -288,7 +353,7 @@ const Collection = () => {
                   setShowFilters(false)
                   setActiveFilter(null)
                 }}
-                className="w-full bg-black text-white py-3 rounded-full mt-4"
+                className="w-full bg-black text-white py-3 mt-4"
               >
                 Apply Filters
               </button>

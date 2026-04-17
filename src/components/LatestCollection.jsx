@@ -4,26 +4,44 @@ import ProductItem from './ProductItem'
 
 const LatestCollection = () => {
 
-    const { products, toggleWishlist, wishlistItems } = useContext(ShopContext)
+    const {
+        products,
+        toggleWishlist,
+        wishlistIds
+    } = useContext(ShopContext)
 
+    const formatImages = (imgs) => {
+        if (!imgs || imgs.length === 0) return []
+
+        return imgs.map(img =>
+            img.startsWith("http")
+                ? img
+                : `http://localhost:5000/${img}`
+        )
+    }
     const [latestProducts, setLatestProducts] = useState([])
 
     useEffect(() => {
-        setLatestProducts(products.slice(0, 4))
+        const latest = products.filter(item => item.latestCollection === true)
+        setLatestProducts(latest.slice(0, 4))
     }, [products])
+
+    // ✅ CORRECT CHECK
+    const isWishlisted = (productId) => {
+        return wishlistIds.includes(productId)
+    }
 
     return (
         <div className="my-10 px-4 sm:px-0">
 
-            {/* PRODUCTS GRID */}
             <div className="max-w-[1200px] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
 
-                {latestProducts.map((item, index) => {
+                {latestProducts.map((item) => {
 
-                    const isWishlisted = wishlistItems.includes(item._id)
+                    const liked = isWishlisted(item._id)
 
                     return (
-                        <div key={index} className="relative group">
+                        <div key={item._id} className="relative group">
 
                             {/* ❤️ WISHLIST BUTTON */}
                             <button
@@ -33,7 +51,7 @@ const LatestCollection = () => {
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
-                                    fill={isWishlisted ? "black" : "none"}
+                                    fill={liked ? "black" : "none"}
                                     stroke="black"
                                     strokeWidth="1.5"
                                     className="w-5 h-5 transition"
@@ -46,11 +64,14 @@ const LatestCollection = () => {
                                 </svg>
                             </button>
 
-                            {/* PRODUCT CARD */}
                             <ProductItem
                                 id={item._id}
-                                image={item.image}
                                 name={item.name}
+                                image={
+                                    item.colours?.length && item.colours[0].images?.length
+                                        ? formatImages(item.colours[0].images)
+                                        : formatImages(item.image)
+                                }
                                 price={item.price}
                             />
 

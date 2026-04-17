@@ -1,27 +1,34 @@
 import React, { useContext, useMemo, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import { toast } from 'react-toastify'
+import axios from "axios"
 
 const PlaceOrder = () => {
 
   const { cartItems, products, currency } = useContext(ShopContext)
 
-  // 🔥 SAME CART LOGIC AS CART PAGE
+  // ================= CART =================
   const cartData = useMemo(() => {
     const items = []
 
     for (const productId in cartItems) {
       const product = products.find(p => p._id === productId)
+      if (!product) continue
 
       for (const size in cartItems[productId]) {
-        const quantity = cartItems[productId][size]
+        for (const color in cartItems[productId][size]) {
+          const quantity = cartItems[productId][size][color]
 
-        if (quantity > 0) {
-          items.push({
-            ...product,
-            size,
-            quantity
-          })
+          if (quantity > 0) {
+            items.push({
+              productId,
+              name: product.name,
+              price: product.price,
+              size,
+              color,
+              quantity
+            })
+          }
         }
       }
     }
@@ -29,13 +36,18 @@ const PlaceOrder = () => {
     return items
   }, [cartItems, products])
 
-  const subtotal = cartData.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  const delivery = subtotal > 0 ? 100 : 0
-  const total = subtotal + delivery
+  const subtotal = cartData.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0
+  )
 
-  // 🔥 CUSTOMER FORM
+  const delivery = subtotal > 0 ? 100 : 0
+  const total = Number(subtotal + delivery)
+
+  // ================= FORM =================
   const [form, setForm] = useState({
     name: '',
+    email: '',
     phone: '',
     address: '',
     city: '',
@@ -46,69 +58,138 @@ const PlaceOrder = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
+    try {
 
-    if (!form.name || !form.phone || !form.address) {
-      toast.error("Fill required fields")
-      return
+      if (!form.email || !form.name || !form.address) {
+        toast.error("Please fill all required fields")
+        return
+      }
+
+      localStorage.setItem("orderData", JSON.stringify({
+        cartData,
+        total,
+        email: form.email,
+        form
+      }))
+
+      const { data } = await axios.post(
+        "http://localhost:5000/api/pay",
+        {
+          total,
+          email: form.email
+        }
+      )
+
+      window.location.href = data.checkoutUrl
+
+    } catch (err) {
+      console.log(err)
+      toast.error("Payment failed")
     }
-
-    const orderData = {
-      customer: form,
-      items: cartData,
-      subtotal,
-      delivery,
-      total
-    }
-
-    console.log("FINAL ORDER:", orderData)
-
-    // 👉 NEXT: PayFast integration here
-  }
-
-  if (cartData.length === 0) {
-    return <div className="p-10 text-center">No items in cart</div>
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 grid lg:grid-cols-2 gap-10">
 
-      {/* ================= DELIVERY FORM ================= */}
-      <div className="space-y-6">
+      {/* ================= FORM ================= */}
+      <div className="space-y-8">
 
-        <h2 className="text-xl font-semibold">Delivery Info</h2>
+        <div>
+          <h2 className="text-2xl font-semibold">Delivery Details</h2>
+          <p className="text-sm text-gray-500">
+            Please enter your delivery information accurately.
+          </p>
+        </div>
 
-        <input name="name" onChange={handleChange} placeholder="Full Name *" className="w-full border p-3" />
-        <input name="phone" onChange={handleChange} placeholder="Phone Number *" className="w-full border p-3" />
+        {/* CONTACT */}
+        <div className="space-y-4">
+          <h3 className="font-medium">Contact</h3>
 
-        <textarea name="address" onChange={handleChange} placeholder="Delivery Address *" className="w-full border p-3 h-24" />
+          <div className="space-y-1">
+            <label className="text-sm">Full Name *</label>
+            <input
+              name="name"
+              onChange={handleChange}
+              placeholder="e.g. John Doe"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-black outline-none"
+            />
+          </div>
 
-        <input name="city" onChange={handleChange} placeholder="City" className="w-full border p-3" />
+          <div className="space-y-1">
+            <label className="text-sm">Email *</label>
+            <input
+              name="email"
+              onChange={handleChange}
+              placeholder="e.g. john@email.com"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-black outline-none"
+            />
+          </div>
 
-        <textarea name="notes" onChange={handleChange} placeholder="Notes (gate code, etc.)" className="w-full border p-3 h-20" />
+          <div className="space-y-1">
+            <label className="text-sm">Phone</label>
+            <input
+              name="phone"
+              onChange={handleChange}
+              placeholder="e.g. 076 123 4567"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-black outline-none"
+            />
+          </div>
+        </div>
+
+        {/* ADDRESS */}
+        <div className="space-y-4">
+          <h3 className="font-medium">Shipping Address</h3>
+
+          <div className="space-y-1">
+            <label className="text-sm">Address *</label>
+            <textarea
+              name="address"
+              onChange={handleChange}
+              placeholder="Street, suburb, building, etc."
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-black outline-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm">City</label>
+            <input
+              name="city"
+              onChange={handleChange}
+              placeholder="e.g. Johannesburg"
+              className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-black outline-none"
+            />
+          </div>
+        </div>
+
+        {/* NOTES */}
+        <div className="space-y-1">
+          <label className="text-sm">Delivery Notes</label>
+          <textarea
+            name="notes"
+            onChange={handleChange}
+            placeholder="Optional: gate code, instructions, etc."
+            className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-black outline-none"
+          />
+        </div>
 
       </div>
 
-      {/* ================= ORDER SUMMARY ================= */}
-      <div className="border p-6 h-fit">
+      {/* ================= SUMMARY ================= */}
+      <div className="lg:sticky top-20 h-fit border rounded-2xl p-6 shadow-sm space-y-4">
 
-        <h2 className="text-lg font-semibold mb-6">Your Order</h2>
+        <h2 className="text-xl font-semibold">Order Summary</h2>
 
-        <div className="space-y-4 text-sm">
-
-          {cartData.map((item, index) => (
-            <div key={index} className="flex justify-between">
-              <span>
-                {item.name} ({item.size}) x {item.quantity}
-              </span>
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          {cartData.map((item, i) => (
+            <div key={i} className="flex justify-between text-sm">
+              <span>{item.name} × {item.quantity}</span>
               <span>{currency}{item.price * item.quantity}</span>
             </div>
           ))}
-
         </div>
 
-        <div className="border-t mt-6 pt-4 space-y-2 text-sm">
-
+        <div className="border-t pt-4 space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Subtotal</span>
             <span>{currency}{subtotal}</span>
@@ -123,14 +204,13 @@ const PlaceOrder = () => {
             <span>Total</span>
             <span>{currency}{total}</span>
           </div>
-
         </div>
 
         <button
           onClick={handlePlaceOrder}
-          className="w-full bg-black text-white py-4 mt-6"
+          className="w-full bg-black text-white py-3 rounded-full mt-4 hover:opacity-90 transition"
         >
-          Proceed to Payment
+          Pay Now
         </button>
 
       </div>
