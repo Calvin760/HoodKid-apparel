@@ -12,6 +12,7 @@ import {
   FiUser
 } from "react-icons/fi";
 import { useUser, useClerk } from "@clerk/clerk-react";
+import Loading from "./Loading";
 
 
 const Navbar = () => {
@@ -25,8 +26,12 @@ const Navbar = () => {
   const location = useLocation();
 
   // ================= CLERK AUTH =================
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
+
+  if (!isLoaded) {
+    return <Loading />;
+  }
 
   const handleLogin = () => {
     openSignIn();
@@ -46,6 +51,8 @@ const Navbar = () => {
   useEffect(() => {
     setVisible(false);
   }, [location.pathname]);
+
+
 
   return (
     <div className={`${!visible ? "sticky top-0" : "relative"} z-50 bg-white font-medium`}>

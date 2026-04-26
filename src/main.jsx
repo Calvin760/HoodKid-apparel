@@ -4,18 +4,27 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import ShopContextProvider from './context/ShopContext.jsx'
-import { ClerkProvider } from "@clerk/clerk-react";
+import { ClerkProvider, ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
+import Loading from "./components/Loading";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ClerkProvider publishableKey={clerkPubKey}>
-      <BrowserRouter>
-        <ShopContextProvider>
-          <App />
-        </ShopContextProvider>
-      </BrowserRouter>
+
+      <ClerkLoading>
+        <Loading />
+      </ClerkLoading>
+
+      <ClerkLoaded>
+        <BrowserRouter>
+          <ShopContextProvider>
+            <App />
+          </ShopContextProvider>
+        </BrowserRouter>
+      </ClerkLoaded>
+
     </ClerkProvider>
   </StrictMode>
 )
