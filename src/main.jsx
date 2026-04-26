@@ -13,17 +13,19 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ClerkProvider publishableKey={clerkPubKey}>
 
-      <ClerkLoading>
-        <Loading />
-      </ClerkLoading>
+      <BrowserRouter>
+        <ShopContextProvider>
 
-      <ClerkLoaded>
-        <BrowserRouter>
-          <ShopContextProvider>
+          <ClerkLoading>
+            <Loading />
+          </ClerkLoading>
+
+          <ClerkLoaded>
             <App />
-          </ShopContextProvider>
-        </BrowserRouter>
-      </ClerkLoaded>
+          </ClerkLoaded>
+
+        </ShopContextProvider>
+      </BrowserRouter>
 
     </ClerkProvider>
   </StrictMode>

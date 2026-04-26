@@ -9,9 +9,6 @@ import Product from './pages/Product'
 // import Login from './pages/Login'
 // import Register from './pages/Register'
 
-import SignIn from './pages/SignIn'
-import SignUp from './pages/SignUp'
-
 import PlaceOrder from './pages/PlaceOrder'
 import Orders from './pages/Orders'
 import Navbar from './components/Navbar'
@@ -30,9 +27,10 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
 import ScrollToTop from './components/ScrollToTop'
 import { ClerkProvider } from "@clerk/clerk-react";
-import Login from './pages/SignIn'
 import Register from './pages/SignUp'
 import Profile from './pages/Profile'
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 const App = () => {
@@ -41,6 +39,16 @@ const App = () => {
 
   const location = useLocation()
   const isHome = location.pathname === '/'
+  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    if (params.has("code") || params.has("id")) {
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
 
   return (
     // <ClerkProvider publishableKey={clerkPubKey}>
@@ -66,11 +74,6 @@ const App = () => {
           <Route path='/contact' element={<Contact />} />
           <Route path='/product/:productId' element={<Product />} />
           <Route path='/cart' element={<Cart />} />
-          {/* <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} /> */}
-
-          {/* <Route path='/signin' element={<Login />} />
-          <Route path='/signup' element={<Register />} /> */}
           <Route path="/profile" element={<Profile />} />
 
           <Route path='/place-order' element={<PlaceOrder />} />

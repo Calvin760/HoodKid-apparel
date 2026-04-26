@@ -33,9 +33,10 @@ const Navbar = () => {
     return <Loading />;
   }
 
-  const handleLogin = () => {
-    openSignIn();
-  };
+  openSignIn({
+    afterSignInUrl: "/",
+    afterSignUpUrl: "/"
+  });
 
   const logout = async () => {
     await signOut();
