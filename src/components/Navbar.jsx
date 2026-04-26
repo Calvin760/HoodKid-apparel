@@ -29,14 +29,17 @@ const Navbar = () => {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
 
-  if (!isLoaded) {
-    return <Loading />;
-  }
+  const handleLogin = () => {
+    if (user) {
+      navigate("/account");
+      return;
+    }
 
-  openSignIn({
-    afterSignInUrl: "/",
-    afterSignUpUrl: "/"
-  });
+    openSignIn({
+      afterSignInUrl: "/",
+      afterSignUpUrl: "/"
+    });
+  };
 
   const logout = async () => {
     await signOut();
