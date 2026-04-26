@@ -22,6 +22,9 @@ const ProductItem = ({ id, image, name, price, colours}) => {
         <img
           src={image[0]}
           alt={name}
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
           className="object-contain transition duration-300 group-hover:scale-105"
         />
 
