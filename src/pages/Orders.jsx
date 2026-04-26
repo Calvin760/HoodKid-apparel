@@ -1,19 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import Loading from '../components/Loading'
+import { useAuth } from '@clerk/clerk-react'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const Orders = () => {
 
   const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const { getToken, isSignedIn } = useAuth()
 
   useEffect(() => {
+
     const fetchOrders = async () => {
       try {
 
-        const token = localStorage.getItem("token")
-        if (!token) return
+        // 🔥 Clerk session check (replaces localStorage)
+        if (!isSignedIn) {
+          setLoading(false)
+          return
+        }
+
+        const token = await getToken()
 
         const { data } = await axios.get(
-          "http://localhost:5000/api/orders/my-orders",
+          `${API_URL}/api/orders/my-orders`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -22,18 +35,35 @@ const Orders = () => {
         )
 
         if (data.success) {
-          setOrders(data.orders.reverse())
+
+          const paidOrders = (data.orders || [])
+            .filter(order => order.paymentStatus === "paid")
+            .sort((a, b) =>
+              new Date(b.createdAt) - new Date(a.createdAt)
+            )
+
+          setOrders(paidOrders)
         }
 
       } catch (err) {
         console.log(err)
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchOrders()
-  }, [])
+  }, [isSignedIn])
 
-  if (orders.length === 0) {
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loading text="Loading your orders..." />
+      </div>
+    )
+  }
+
+  if (!orders.length) {
     return (
       <div className="p-10 text-center">
         <h2 className="text-xl font-semibold">No Orders Yet</h2>
@@ -52,12 +82,11 @@ const Orders = () => {
 
           <div key={order._id} className="border p-6 rounded-lg">
 
-            {/* ================= HEADER ================= */}
             <div className="flex flex-col sm:flex-row sm:justify-between mb-4 gap-2">
 
               <div>
                 <p className="font-medium">
-                  Order #{order._id}
+                  {order.orderNumber || order._id}
                 </p>
 
                 <p className="text-sm text-gray-500">
@@ -70,12 +99,12 @@ const Orders = () => {
                 <p>
                   Payment:
                   <span className="ml-2 font-medium text-yellow-600">
-                    Pending
+                    {order.paymentStatus}
                   </span>
                 </p>
 
                 <p>
-                  Status:
+                  Delivery Status:
                   <span className="ml-2 font-medium">
                     {order.status}
                   </span>
@@ -85,7 +114,6 @@ const Orders = () => {
 
             </div>
 
-            {/* ================= CUSTOMER + DELIVERY INFO ================= */}
             <div className="text-sm text-gray-700 mb-4 space-y-1">
 
               <p><span className="font-medium">Name:</span> {order.shippingInfo?.name}</p>
@@ -93,18 +121,12 @@ const Orders = () => {
               <p><span className="font-medium">Address:</span> {order.shippingInfo?.address}</p>
               <p><span className="font-medium">City:</span> {order.shippingInfo?.city}</p>
 
-              {order.shippingInfo?.notes && (
-                <p><span className="font-medium">Notes:</span> {order.shippingInfo.notes}</p>
-              )}
-
             </div>
 
-            {/* ================= ITEMS ================= */}
             <div className="space-y-3">
 
               {order.items.map((item, index) => (
                 <div key={index} className="flex justify-between text-sm">
-
                   <span>
                     {item.name} ({item.size}{item.color ? ` / ${item.color}` : ""}) x {item.quantity}
                   </span>
@@ -112,13 +134,11 @@ const Orders = () => {
                   <span>
                     R {item.price * item.quantity}
                   </span>
-
                 </div>
               ))}
 
             </div>
 
-            {/* ================= TOTAL ================= */}
             <div className="border-t mt-4 pt-3 flex justify-between font-medium">
               <span>Total</span>
               <span>R {order.total}</span>

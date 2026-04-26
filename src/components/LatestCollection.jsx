@@ -1,8 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import ProductItem from './ProductItem'
+import Loading from "./Loading"
 
 const LatestCollection = () => {
+
+    const API_URL = import.meta.env.VITE_API_URL
 
     const {
         products,
@@ -10,25 +13,41 @@ const LatestCollection = () => {
         wishlistIds
     } = useContext(ShopContext)
 
+    const [latestProducts, setLatestProducts] = useState([])
+    const [loading, setLoading] = useState(true)
+
     const formatImages = (imgs) => {
         if (!imgs || imgs.length === 0) return []
 
         return imgs.map(img =>
             img.startsWith("http")
                 ? img
-                : `http://localhost:5000/${img}`
+                : `${API_URL}/${img}`
         )
     }
-    const [latestProducts, setLatestProducts] = useState([])
 
     useEffect(() => {
-        const latest = products.filter(item => item.latestCollection === true)
-        setLatestProducts(latest.slice(0, 4))
+        if (!products || products.length === 0) {
+            setLoading(true)
+            return
+        }
+
+        const latest = products
+            .filter(item => item.latestCollection === true)
+            .slice(0, 4)
+
+        setLatestProducts(latest)
+        setLoading(false)
+
     }, [products])
 
-    // ✅ CORRECT CHECK
     const isWishlisted = (productId) => {
         return wishlistIds.includes(productId)
+    }
+
+    // ✅ LOADING STATE
+    if (loading) {
+        return <Loading text="Loading latest collection..." />
     }
 
     return (
@@ -73,6 +92,7 @@ const LatestCollection = () => {
                                         : formatImages(item.image)
                                 }
                                 price={item.price}
+                                colours={item.colours}
                             />
 
                         </div>

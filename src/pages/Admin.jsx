@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ProductItem from "../components/ProductItem";
+import { FaBox, FaPlus, FaClipboardList } from "react-icons/fa";
+import { useAuth } from "@clerk/clerk-react";
 
 const Admin = () => {
+
+    const API_URL = import.meta.env.VITE_API_URL
+
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [tab, setTab] = useState("products");
+    const [orders, setOrders] = useState([]);
+    const [orderLoading, setOrderLoading] = useState(false);
+    const [search, setSearch] = useState("");
+
+    const { getToken } = useAuth();
 
     const CATEGORY_OPTIONS = [
         { label: "Tops", value: "tops" },
@@ -12,36 +23,34 @@ const Admin = () => {
         { label: "Hoodies", value: "hoodies" },
         { label: "Pants", value: "pants" },
         { label: "Headwear", value: "headwear" },
-    ]
+    ];
 
-    const formatImages = (imgs) => {
-        if (!imgs || imgs.length === 0) return []
+    const SUBCATEGORY_OPTIONS = [
+        { label: "Caution Capsule", value: "caution capsule" },
+        { label: "Menace To the society", value: "menace to the society" },
+        { label: "The Boxed Cropped T", value: "the boxed cropped t" },
+        { label: "Anti Pilling Fleece", value: "anti pilling fleece" },
+    ];
 
-        return imgs.map(img =>
-            img.startsWith("http")
-                ? img
-                : `http://localhost:5000/${img}`
-        )
-    }
-    
-    const token = localStorage.getItem("token");
-
-    // ================= FORM STATE =================
+    // ================= FORM =================
     const [form, setForm] = useState({
         name: "",
+        description: "",
         price: "",
         category: "",
+        subcategory: "",
         gender: "",
         bestseller: false,
         latestCollection: false,
         sizes: [],
         colours: [],
-        images: []
+        images: [],
+        video: null,
+        hero: ""
     });
 
     const [editId, setEditId] = useState(null);
 
-    // ================= COLOR INPUT =================
     const [colorInput, setColorInput] = useState({
         name: "",
         value: "#000000"
@@ -51,11 +60,7 @@ const Admin = () => {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-
-            const { data } = await axios.get(
-                "http://localhost:5000/api/products"
-            );
-
+            const { data } = await axios.get(`${API_URL}/api/products`);
             setProducts(data.products || []);
         } catch (err) {
             console.log(err);
@@ -64,19 +69,45 @@ const Admin = () => {
         }
     };
 
-    useEffect(() => {
-        fetchProducts();
-    }, []);
+    const fetchOrders = async () => {
+        try {
+            setOrderLoading(true);
 
-    // ================= INPUT =================
+            const token = await getToken();
+
+            const { data } = await axios.get(
+                `${API_URL}/api/orders/admin`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setOrders(data.orders || []);
+
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setOrderLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (tab === "products") fetchProducts();
+        if (tab === "orders") fetchOrders();
+    }, [tab]);
+
+    // ================= HANDLERS =================
     const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+
         setForm({
             ...form,
-            [e.target.name]: e.target.value
+            [name]: type === "checkbox" ? checked : value
         });
     };
 
-    // ================= SIZE TOGGLE =================
     const toggleSize = (size) => {
         setForm((prev) => ({
             ...prev,
@@ -86,22 +117,21 @@ const Admin = () => {
         }));
     };
 
-    // ================= ADD COLOR =================
     const addColor = () => {
         if (!colorInput.name) return;
 
         setForm((prev) => ({
             ...prev,
-            colours: [...(prev.colours || []), colorInput]
+            colours: [...prev.colours, colorInput]
         }));
 
         setColorInput({ name: "", value: "#000000" });
     };
 
-    const removeColor = (index) => {
+    const removeColor = (i) => {
         setForm((prev) => ({
             ...prev,
-            colours: prev.colours.filter((_, i) => i !== index)
+            colours: prev.colours.filter((_, index) => index !== i)
         }));
     };
 
@@ -110,39 +140,51 @@ const Admin = () => {
         e.preventDefault();
 
         try {
+            const token = await getToken(); // ✅ Clerk token
+
             const formData = new FormData();
 
             formData.append("name", form.name);
+            formData.append("description", form.description);
             formData.append("price", form.price);
             formData.append("category", form.category.toLowerCase());
+            formData.append("subcategory", form.subcategory.toLowerCase());
             formData.append("gender", form.gender);
             formData.append("bestseller", form.bestseller);
             formData.append("latestCollection", form.latestCollection);
-            formData.append("sizes", JSON.stringify(form.sizes || []));
-            formData.append("colours", JSON.stringify(form.colours || []));
+            formData.append("sizes", JSON.stringify(form.sizes));
+            formData.append("colours", JSON.stringify(form.colours));
+            formData.append("hero", form.hero);
+            if (form.video) {
+                formData.append("video", form.video);
+            }
 
             form.images.forEach((img) => {
                 formData.append("images", img);
             });
 
+            // ================= UPDATE =================
             if (editId) {
                 await axios.put(
-                    `http://localhost:5000/api/products/${editId}`,
+                    `${API_URL}/api/products/${editId}`,
                     formData,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${token}`, // ✅ FIXED
                             "Content-Type": "multipart/form-data"
                         }
                     }
                 );
-            } else {
+            }
+
+            // ================= CREATE =================
+            else {
                 await axios.post(
-                    "http://localhost:5000/api/products",
+                    `${API_URL}/api/products`,
                     formData,
                     {
                         headers: {
-                            Authorization: `Bearer ${token}`,
+                            Authorization: `Bearer ${token}`, // ✅ FIXED
                             "Content-Type": "multipart/form-data"
                         }
                     }
@@ -160,8 +202,10 @@ const Admin = () => {
     // ================= DELETE =================
     const deleteProduct = async (id) => {
         try {
+            const token = await getToken(); // ✅ Clerk token
+
             await axios.delete(
-                `http://localhost:5000/api/products/${id}`,
+                `${API_URL}/api/products/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -170,6 +214,7 @@ const Admin = () => {
             );
 
             fetchProducts();
+
         } catch (err) {
             console.log(err);
         }
@@ -181,288 +226,324 @@ const Admin = () => {
 
         setForm({
             name: item.name,
+            description: item.description || "",
             price: item.price,
             category: item.category,
-            gender: item.gender,
-            bestseller: item.bestseller,
-            latestCollection: item.latestCollection,
+            subcategory: item.subcategory,
+            gender: item.gender || "",
+            bestseller: item.bestseller || false,
+            latestCollection: item.latestCollection || false,
             sizes: item.sizes || [],
             colours: item.colours || [],
-            images: []
+            images: [],
+            video: null,
+            hero: item.hero || ""
         });
+
+        setTab("create");
     };
 
-    // ================= RESET =================
     const resetForm = () => {
         setEditId(null);
-
         setForm({
             name: "",
+            description: "",
             price: "",
             category: "",
+            subcategory: "",
             gender: "",
             bestseller: false,
             latestCollection: false,
             sizes: [],
             colours: [],
-            images: []
+            images: [],
+            video: null,
+            hero: ""
         });
-
-        setColorInput({ name: "", value: "#000000" });
     };
+
+    const filteredOrders = orders
+        .filter(order => order.paymentStatus === "paid")
+        .filter(order => {
+            const q = search.toLowerCase();
+
+            return (
+                order._id.toLowerCase().includes(q) ||
+                order.shippingInfo?.name?.toLowerCase().includes(q) ||
+                order.shippingInfo?.phone?.includes(q)
+            );
+        });
 
     // ================= UI =================
     return (
         <div className="p-6">
 
-            <h1 className="text-2xl font-semibold mb-6">
-                Admin Panel
-            </h1>
+            <h1 className="text-2xl font-semibold mb-4">Admin Panel</h1>
 
-            {/* ================= FORM ================= */}
-            <form onSubmit={handleSubmit} className="grid gap-4 max-w-md mb-10">
-
-                <input
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    placeholder="Product Name"
-                    className="border p-2"
-                />
-
-                <input
-                    name="price"
-                    value={form.price}
-                    onChange={handleChange}
-                    placeholder="Price"
-                    className="border p-2"
-                />
-
-                <select
-                    name="category"
-                    value={form.category}
-                    onChange={handleChange}
-                    className="border p-2"
-                    required
-                >
-                    <option value="">Select Category</option>
-                    {CATEGORY_OPTIONS.map(cat => (
-                        <option key={cat.value} value={cat.value}>
-                            {cat.label}
-                        </option>
-                    ))}
-                </select>
-
-                <select
-                    name="gender"
-                    value={form.gender}
-                    onChange={handleChange}
-                    className="border p-2"
-                >
-                    <option value="">Select Gender</option>
-                    <option value="Men">Men</option>
-                    <option value="Women">Women</option>
-                    <option value="Unisex">Unisex</option>
-                </select>
-
-                {/* ================= IMAGES ================= */}
-                <input
-                    type="file"
-                    multiple
-                    className="border p-2 w-full"
-                    onChange={(e) =>
-                        setForm({
-                            ...form,
-                            images: Array.from(e.target.files)
-                        })
-                    }
-                />
-
-                <div className="flex gap-2 flex-wrap">
-                    {form.images.map((img, i) => (
-                        <img
-                            key={i}
-                            src={URL.createObjectURL(img)}
-                            className="h-16 w-16 object-cover border"
-                        />
-                    ))}
-                </div>
-
-                {/* ================= SIZES ================= */}
-                <div>
-                    <p className="mb-2 font-medium">Sizes</p>
-                    <div className="flex gap-3 flex-wrap">
-                        {["XS", "S", "M", "L", "XL", "28", "30", "32", "34", "36", "38", "40", "42"].map((size) => (
-                            <button
-                                type="button"
-                                key={size}
-                                onClick={() => toggleSize(size)}
-                                className={`border px-3 py-1 ${form.sizes.includes(size)
-                                        ? "bg-black text-white"
-                                        : ""
-                                    }`}
-                            >
-                                {size}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ================= COLOURS ================= */}
-                <div>
-                    <p className="mb-2 font-medium">Colours</p>
-
-                    <div className="flex gap-2 items-center">
-                        <input
-                            placeholder="Color name"
-                            value={colorInput.name}
-                            onChange={(e) =>
-                                setColorInput({
-                                    ...colorInput,
-                                    name: e.target.value
-                                })
-                            }
-                            className="border p-2 flex-1"
-                        />
-
-                        <input
-                            type="color"
-                            value={colorInput.value}
-                            onChange={(e) =>
-                                setColorInput({
-                                    ...colorInput,
-                                    value: e.target.value
-                                })
-                            }
-                        />
-
-                        <button
-                            type="button"
-                            onClick={addColor}
-                            className="bg-black text-white px-3 py-2"
-                        >
-                            Add
-                        </button>
-                    </div>
-
-                    <div className="flex gap-2 mt-3 flex-wrap">
-                        {form.colours.map((c, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center gap-2 border px-2 py-1"
-                            >
-                                <div
-                                    className="w-4 h-4 rounded-full border"
-                                    style={{ backgroundColor: c.value }}
-                                />
-                                <span>{c.name}</span>
-
-                                <button
-                                    type="button"
-                                    onClick={() => removeColor(i)}
-                                    className="text-red-500 text-xs"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ================= CHECKBOXES ================= */}
-                <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={form.bestseller}
-                        onChange={(e) =>
-                            setForm({
-                                ...form,
-                                bestseller: e.target.checked
-                            })
-                        }
-                    />
-                    Bestseller
-                </label>
-
-                <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={form.latestCollection}
-                        onChange={(e) =>
-                            setForm({
-                                ...form,
-                                latestCollection: e.target.checked
-                            })
-                        }
-                    />
-                    Latest Collection
-                </label>
-
-                <button className="bg-black text-white py-2">
-                    {editId ? "Update Product" : "Add Product"}
+            {/* SEGMENTED */}
+            <div className="bg-gray-100 p-1 rounded-xl flex gap-1 mb-6 w-full md:w-fit">
+                <button onClick={() => setTab("products")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg ${tab === "products" ? "bg-black text-white" : ""}`}>
+                    <FaBox /> <span className="hidden sm:inline">Products</span>
                 </button>
 
-                {editId && (
-                    <button
-                        type="button"
-                        onClick={resetForm}
-                        className="border py-2"
-                    >
-                        Cancel Edit
-                    </button>
-                )}
-            </form>
+                <button onClick={() => setTab("create")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg ${tab === "create" ? "bg-black text-white" : ""}`}>
+                    <FaPlus /> <span className="hidden sm:inline">Create</span>
+                </button>
 
-            {/* ================= PRODUCTS ================= */}
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                <div className="grid grid-cols-4 gap-6">
+                <button onClick={() => setTab("orders")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg ${tab === "orders" ? "bg-black text-white" : ""}`}>
+                    <FaClipboardList /> <span className="hidden sm:inline">Orders</span>
+                </button>
+            </div>
 
-                    {products.map((item) => (
-                        <div key={item._id} className="border p-4">
+            {/* PRODUCTS */}
+            {tab === "products" && (
+                loading ? <p>Loading...</p> :
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {products.map((item) => (
+                            <div key={item._id} className="border p-4 rounded-lg">
+                                <ProductItem id={item._id} name={item.name} image={item.image} price={item.price} />
 
-                            <ProductItem
-                                id={item._id}
-                                name={item.name}
-                                image={
-                                    item.colours?.length && item.colours[0].images?.length
-                                        ? formatImages(item.colours[0].images)
-                                        : formatImages(item.image)
+                                {/* <p className="mt-2 font-medium">{item.name}</p> */}
+                                <p className="text-sm text-gray-500">{item.gender}</p>
+
+                                <div className="flex gap-2 mt-2">
+                                    <button onClick={() => editProduct(item)} className="text-blue-600">Edit</button>
+                                    <button onClick={() => deleteProduct(item._id)} className="text-red-600">Delete</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+            )}
+
+            {/* CREATE */}
+            {tab === "create" && (
+                <form onSubmit={handleSubmit} className="grid gap-4 max-w-md">
+
+                    <input name="name" value={form.name} onChange={handleChange} placeholder="Name" className="border p-2" />
+
+                    <textarea name="description" value={form.description} onChange={handleChange}
+                        placeholder="Description" className="border p-2" />
+
+                    <input name="price" value={form.price} onChange={handleChange} placeholder="Price" className="border p-2" />
+
+                    {/* CATEGORY */}
+                    <select name="category" value={form.category} onChange={handleChange} className="border p-2">
+                        <option value="">Category</option>
+                        {CATEGORY_OPTIONS.map(c => (
+                            <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                    </select>
+
+                    {/* SUBCATEGORY */}
+                    <select name="subcategory" value={form.subcategory} onChange={handleChange} className="border p-2">
+                        <option value="">Subcategory</option>
+                        {SUBCATEGORY_OPTIONS.map(c => (
+                            <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                    </select>
+
+                    {/* GENDER */}
+                    <select name="gender" value={form.gender} onChange={handleChange} className="border p-2">
+                        <option value="">Gender</option>
+                        <option value="Men">Men</option>
+                        <option value="Women">Women</option>
+                        <option value="Unisex">Unisex</option>
+                    </select>
+
+                    {/* CHECKBOXES */}
+                    <label className="flex gap-2 items-center">
+                        <input type="checkbox" name="bestseller" checked={form.bestseller} onChange={handleChange} />
+                        Bestseller
+                    </label>
+
+                    <label className="flex gap-2 items-center">
+                        <input type="checkbox" name="latestCollection" checked={form.latestCollection} onChange={handleChange} />
+                        Latest Collection
+                    </label>
+
+                    {/* SIZES */}
+                    <div>
+                        <p>Sizes</p>
+                        <div className="flex gap-2 flex-wrap">
+                            {["XS", "S", "M", "L", "XL", "26", "28", "29", "30", "32", "34", "36","38","40", "42"].map(s => (
+                                <button type="button" key={s}
+                                    onClick={() => toggleSize(s)}
+                                    className={`border px-3 py-1 ${form.sizes.includes(s) ? "bg-black text-white" : ""}`}>
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* COLOURS */}
+                    <div>
+                        <p>Colours</p>
+
+                        <div className="flex gap-2">
+                            <input placeholder="Name" value={colorInput.name}
+                                onChange={(e) => setColorInput({ ...colorInput, name: e.target.value })}
+                                className="border p-2" />
+
+                            <input type="color" value={colorInput.value}
+                                onChange={(e) => setColorInput({ ...colorInput, value: e.target.value })} />
+
+                            <button type="button" onClick={addColor}>Add</button>
+                        </div>
+
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                            {form.colours.map((c, i) => (
+                                <div key={i} className="flex items-center gap-1 border px-2 py-1">
+                                    <div style={{ background: c.value }} className="w-4 h-4" />
+                                    {c.name}
+                                    <button type="button" onClick={() => removeColor(i)}>✕</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* IMAGES */}
+                    <input type="file" multiple onChange={(e) => setForm({ ...form, images: Array.from(e.target.files) })} />
+
+                    <div className="flex gap-2">
+                        {form.images.map((img, i) => (
+                            <img key={i} src={URL.createObjectURL(img)} className="w-16 h-16 object-cover" />
+                        ))}
+                    </div>
+
+                    {editId && products.find(p => p._id === editId)?.video && (
+                        <video className="w-full mt-2" controls>
+                            <source
+                                src={
+                                    products.find(p => p._id === editId).video.startsWith("http")
+                                        ? products.find(p => p._id === editId).video
+                                        : `${API_URL}/${products.find(p => p._id === editId).video}`
                                 }
-                                price={item.price}
+                                type="video/mp4"
                             />
+                        </video>
+                    )}
 
-                            <p>{item.name}</p>
-                            <p>R {item.price}</p>
+                    <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) =>
+                            setForm({
+                                ...form,
+                                video: e.target.files[0]
+                            })
+                        }
+                        className="border p-2"
+                    />
 
-                            <div className="flex gap-1 mt-1">
-                                {item.sizes?.map((s) => (
-                                    <span key={s} className="text-xs border px-1">
-                                        {s}
-                                    </span>
-                                ))}
-                            </div>
+                    {/* HERO SELECTION */}
+                    <div>
+                        <p className="mb-1">Hero Section</p>
 
-                            <div className="flex gap-2 mt-2">
-                                <button
-                                    onClick={() => editProduct(item)}
-                                    className="text-blue-600"
-                                >
-                                    Edit
-                                </button>
+                        <select
+                            name="hero"
+                            value={form.hero}
+                            onChange={handleChange}
+                            className="border p-2 w-full"
+                        >
+                            <option value="">Not a hero product</option>
+                            <option value="hero1">Hero 1</option>
+                            <option value="hero2">Hero 2</option>
+                            <option value="hero3">Hero 3</option>
+                        </select>
+                    </div>
 
-                                <button
-                                    onClick={() => deleteProduct(item._id)}
-                                    className="text-red-600"
-                                >
-                                    Delete
-                                </button>
-                            </div>
+                    <button className="bg-black text-white py-2">
+                        {editId ? "Update Product" : "Add Product"}
+                    </button>
+
+                </form>
+            )}
+
+            {tab === "orders" && (
+                <div>
+
+                    {/* SEARCH */}
+                    <input
+                        type="text"
+                        placeholder="Search by ID, name or phone..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="border p-2 mb-4 w-full md:w-1/3"
+                    />
+
+                    {/* LOADING */}
+                    {orderLoading ? (
+                        <p>Loading orders...</p>
+                    ) : filteredOrders.length === 0 ? (
+                        <p>No paid orders found</p>
+                    ) : (
+                        <div className="space-y-6">
+
+                            {filteredOrders.map((order) => (
+                                <div key={order._id} className="border p-4 rounded">
+
+                                    <p className="font-medium">
+                                        Order ID: {order.orderNumber || order._id}
+                                    </p>
+
+                                    <p className="text-sm text-gray-500">
+                                        {order.shippingInfo?.name || "No name"}
+                                    </p>
+
+                                    <div className="mt-2 text-sm space-y-1">
+                                        <p>Total: R {order.total}</p>
+
+                                        <p>
+                                            Payment:
+                                            <span className="ml-2 font-semibold text-green-600">
+                                                {order.paymentStatus}
+                                            </span>
+                                        </p>
+
+                                        <p>
+                                            Method:
+                                            <span className="ml-2 font-semibold">
+                                                {order.deliveryMethod || "N/A"}
+                                            </span>
+                                        </p>
+                                    </div>
+
+                                    {/* SHIPPING INFO */}
+                                    {order.deliveryMethod === "delivery" && (
+                                        <div className="mt-3 text-sm">
+                                            <p>
+                                                Phone: {order.shippingInfo?.phone || "No phone"}
+                                            </p>
+                                            <p>
+                                                Address: {order.shippingInfo?.address || "No address"}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* PICKUP */}
+                                    {order.deliveryMethod === "pickup" && (
+                                        <p className="mt-3 text-blue-600 text-sm">
+                                            Customer will collect (Pickup)
+                                        </p>
+                                    )}
+
+                                    {/* ITEMS */}
+                                    <div className="mt-3 text-xs text-gray-600">
+                                        {order.items.map((i, idx) => (
+                                            <p key={idx}>
+                                                {i.name} ({i.size} / {i.color}) × {i.quantity}
+                                            </p>
+                                        ))}
+                                    </div>
+
+                                </div>
+                            ))}
 
                         </div>
-                    ))}
-
+                    )}
                 </div>
             )}
         </div>

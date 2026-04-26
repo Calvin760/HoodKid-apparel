@@ -4,6 +4,8 @@ import LatestCollection from '../components/LatestCollection'
 import BestSeller from '../components/BestSeller'
 import OurPolicy from '../components/OurPolicy'
 import NewsLetterBox from '../components/NewsLetterBox'
+import FreshDrop from '../components/FreshDrop'
+import Headwear from '../components/Headwear'
 
 const Home = () => {
   return (
@@ -11,6 +13,9 @@ const Home = () => {
       <Hero/>
       <LatestCollection/>
       <BestSeller/>
+      <Headwear />
+      <FreshDrop/>
+      
       {/* <OurPolicy/> */}
       {/* <NewsLetterBox/> */}
     </div>

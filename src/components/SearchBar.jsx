@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 
 const SearchBar = () => {
 
+    const API_URL = import.meta.env.VITE_API_URL
     const {
         search,
         setSearch,
@@ -14,8 +15,8 @@ const SearchBar = () => {
         products
     } = useContext(ShopContext)
 
-    const trending = ['Caution capsule', 'Hoodies', 'Mini-skirt', 'Leggings set']
-    const popular = ['Black hoodie', 'White sneakers', 'Tracksuit', 'Cap']
+    const trending = ['Caution capsule', 'Hoodies', 'Mini-skirt']
+    const popular = ['Menace ', 'Shorts', 'Pants', 'Panel Cap']
 
     const [page, setPage] = useState(0)
     const ITEMS_PER_PAGE = 4
@@ -26,15 +27,22 @@ const SearchBar = () => {
         return imgs.map(img =>
             img.startsWith("http")
                 ? img
-                : `http://localhost:5000/${img}`
+                : `${API_URL}/${img}`
         )
     }
 
     const results = useMemo(() => {
         if (!search.trim()) return []
-        return products.filter(p =>
-            p.name.toLowerCase().includes(search.toLowerCase())
-        )
+
+        const q = search.toLowerCase()
+
+        return products.filter(p => {
+            return (
+                p.name?.toLowerCase().includes(q) ||
+                p.category?.toLowerCase().includes(q) ||
+                p.subcategory?.toLowerCase().includes(q)
+            )
+        })
     }, [search, products])
 
     const paginatedResults = results.slice(
@@ -69,7 +77,11 @@ const SearchBar = () => {
 
                     {/* CLOSE */}
                     <img
-                        onClick={() => setShowSearch(false)}
+                        onClick={() => {
+                            setShowSearch(false)
+                            setSearch("")     // ✅ clear text
+                            setPage(0)        // optional: reset pagination
+                        }}
                         src={assets.cross_icon}
                         className="w-5 cursor-pointer"
                         alt=""
@@ -139,7 +151,10 @@ const SearchBar = () => {
                                 <Link
                                     key={item._id}
                                     to={`/product/${item._id}`}
-                                    onClick={() => setShowSearch(false)}
+                                    onClick={() => {
+                                        setShowSearch(false)
+                                        setSearch("")   // ✅ prevents stale search when reopening
+                                    }}
                                 >
                                     <ProductItem
                                         id={item._id}
@@ -150,6 +165,7 @@ const SearchBar = () => {
                                                 : formatImages(item.image)
                                         }
                                         price={item.price}
+                                        colours={item.colours}
                                     />
                                 </Link>
                             ))}
@@ -164,7 +180,10 @@ const SearchBar = () => {
                                     <Link
                                         key={item._id}
                                         to={`/product/${item._id}`}
-                                        onClick={() => setShowSearch(false)}
+                                        onClick={() => {
+                                            setShowSearch(false)
+                                            setSearch("")   // ✅ prevents stale search when reopening
+                                        }}
                                     >
                                         <ProductItem
                                             id={item._id}
@@ -175,6 +194,7 @@ const SearchBar = () => {
                                                     : formatImages(item.image)
                                             }
                                             price={item.price}
+                                            colours={item.colours}
                                         />
                                     </Link>
                                 ))}

@@ -1,56 +1,48 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { FiUser, FiShoppingBag, FiHeart, FiLogOut } from 'react-icons/fi'
-import axios from 'axios'
+import Loading from '../components/Loading'
+import { useUser, useClerk } from '@clerk/clerk-react'
 
 const Account = () => {
 
-    const [user, setUser] = useState(null)
     const navigate = useNavigate()
+    const { user, isLoaded } = useUser()
+    const { signOut } = useClerk()
 
+    // ✅ FIX: redirect if NOT logged in
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const token = localStorage.getItem("token")
-
-                if (!token) {
-                    navigate("/login")
-                    return
-                }
-
-                const { data } = await axios.get(
-                    "http://localhost:5000/api/auth/me",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                )
-
-                if (data.success) {
-                    setUser(data.user)
-                }
-
-            } catch (err) {
-                console.log(err)
-                navigate("/login")
-            }
+        if (isLoaded && !user) {
+            window.location.href =
+                "https://flowing-hen-56.accounts.dev/sign-in";
         }
+    }, [isLoaded, user]);
 
-        fetchUser()
-    }, [navigate])
-
-    const logout = () => {
-        localStorage.removeItem("token")
-        navigate("/login")
+    if (!isLoaded) {
+        return <Loading />
     }
 
-    if (!user) return <p className="p-10">Loading...</p>
+    // still loading user → show loader
+    if (!user) {
+        return <Loading />
+    }
 
-    // ✅ SAFE ADMIN CHECK (handles both backend styles)
+    // Clerk fields
+    const name =
+        user.fullName ||
+        user.firstName ||
+        "User"
+
+    const email =
+        user.primaryEmailAddress?.emailAddress || ""
+
     const isAdmin =
-        user?.isAdmin === true ||
-        user?.role === "admin"
+        user.publicMetadata?.role === "admin"
+
+    const logout = async () => {
+        await signOut()
+        navigate("/signin")
+    }
 
     return (
         <div className="px-6 sm:px-12 py-16 max-w-5xl mx-auto text-black">
@@ -59,19 +51,17 @@ const Account = () => {
                 My Account
             </h1>
 
-            {/* USER CARD */}
             <div className="border border-gray-200 p-6 rounded-xl mb-10 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center">
-                    {user.name?.charAt(0)}
+                    {name?.charAt(0)}
                 </div>
 
                 <div>
-                    <p className="font-semibold">{user.name}</p>
-                    <p className="text-gray-500 text-sm">{user.email}</p>
+                    <p className="font-semibold">{name}</p>
+                    <p className="text-gray-500 text-sm">{email}</p>
                 </div>
             </div>
 
-            {/* ACTIONS */}
             <div className="grid sm:grid-cols-2 gap-6">
 
                 <Link to="/orders" className="border p-6 rounded-xl hover:shadow-md transition flex items-center gap-4">
@@ -90,15 +80,14 @@ const Account = () => {
                     </div>
                 </Link>
 
-                <div className="border p-6 rounded-xl flex items-center gap-4 cursor-pointer hover:shadow-md transition">
+                <Link to='/profile' className="border p-6 rounded-xl flex items-center gap-4 cursor-pointer hover:shadow-md transition">
                     <FiUser size={22} />
                     <div>
                         <p className="font-medium">Profile</p>
                         <p className="text-sm text-gray-500">Edit your details</p>
                     </div>
-                </div>
+                </Link>
 
-                {/* ADMIN ONLY */}
                 {isAdmin && (
                     <Link
                         to="/admin"
@@ -108,18 +97,6 @@ const Account = () => {
                         <div>
                             <p className="font-medium">Admin Panel</p>
                             <p className="text-sm text-gray-500">Manage store</p>
-                        </div>
-                    </Link>
-                )}
-                {isAdmin && (
-                    <Link
-                        to="/admin/orders"
-                        className="border p-6 rounded-xl hover:shadow-md transition flex items-center gap-4"
-                    >
-                        <FiUser size={22} />
-                        <div>
-                            <p className="font-medium">Admin Orders</p>
-                            <p className="text-sm text-gray-500">Manage Orders</p>
                         </div>
                     </Link>
                 )}

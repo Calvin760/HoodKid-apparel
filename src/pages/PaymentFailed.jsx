@@ -1,34 +1,34 @@
 import React from "react"
 import { Link } from "react-router-dom"
 
-const PaymentSuccess = () => {
+const PaymentFailed = () => {
     return (
         <div className="h-screen flex items-center justify-center px-4">
 
             <div className="max-w-md w-full text-center border rounded-xl p-8 shadow-sm bg-white">
 
                 {/* ICON */}
-                <div className="text-5xl mb-4">🎉</div>
+                <div className="text-5xl mb-4">❌</div>
 
                 {/* TITLE */}
                 <h1 className="text-2xl font-bold mb-2">
-                    Payment Successful
+                    Payment Not Completed
                 </h1>
 
                 {/* MESSAGE */}
                 <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-                    Thank you for your purchase. Your order has been placed successfully and is now being processed.
-                    We truly appreciate your support 🙏
+                    Your payment was not completed or was cancelled.
+                    No charges have been made. You can try again anytime.
                 </p>
 
                 {/* BUTTONS */}
                 <div className="flex flex-col gap-3">
 
                     <Link
-                        to="/orders"
+                        to="/cart"
                         className="bg-black text-white py-3 rounded hover:opacity-90 transition"
                     >
-                        View My Orders
+                        Return to Cart
                     </Link>
 
                     <Link
@@ -46,4 +46,4 @@ const PaymentSuccess = () => {
     )
 }
 
-export default PaymentSuccess
+export default PaymentFailed

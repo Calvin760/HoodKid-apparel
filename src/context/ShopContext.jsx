@@ -1,30 +1,31 @@
 import { createContext, useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
 
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
 
+    const API_URL = import.meta.env.VITE_API_URL;
+
     const currency = "R";
     const delivery_fee = 90;
 
-    // ================= PRODUCTS =================
+    // ================= CLERK AUTH =================
+    const { getToken, isSignedIn, isLoaded } = useAuth();
+
+    // ================= STATE =================
     const [products, setProducts] = useState([]);
-
-    // ================= CART (LOCAL) =================
     const [cartItems, setCartItems] = useState({});
-
-    // ================= WISHLIST (BACKEND) =================
     const [wishlistProducts, setWishlistProducts] = useState([]);
-
     const [search, setSearch] = useState("");
     const [showSearch, setShowSearch] = useState(false);
 
     // ================= FETCH PRODUCTS =================
     const fetchProducts = async () => {
         try {
-            const { data } = await axios.get("http://localhost:5000/api/products");
+            const { data } = await axios.get(`${API_URL}/api/products`);
             if (data.success) setProducts(data.products);
         } catch (err) {
             console.log(err);
@@ -34,58 +35,84 @@ const ShopContextProvider = (props) => {
     // ================= FETCH WISHLIST =================
     const fetchWishlist = async () => {
         try {
-            const token = localStorage.getItem("token");
+            if (!isSignedIn) return;
+
+            const token = await getToken();
+
             if (!token) return;
 
             const { data } = await axios.get(
-                "http://localhost:5000/api/users/wishlist",
+                `${API_URL}/api/wishlist`,
                 {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
-
-            if (data.success) setWishlistProducts(data.wishlist);
-
-        } catch (err) {
-            console.log(err);
-        }
-    };
-
-    useEffect(() => {
-        fetchProducts();
-        fetchWishlist();
-    }, []);
-
-    // ================= WISHLIST =================
-    const toggleWishlist = async (productId) => {
-        try {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                toast.error("Login required");
-                return;
-            }
-
-            const { data } = await axios.post(
-                "http://localhost:5000/api/users/wishlist",
-                { productId },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
             );
 
             if (data.success) {
-                await fetchWishlist();
+                setWishlistProducts(data.wishlist || []);
             }
 
-        } catch (err) {
-            console.log(err);
+        } catch (error) {
+            console.log(error);
         }
     };
 
-    // ✅ IMPORTANT: unified ID system
-    const wishlistIds = wishlistProducts.map(p => p._id);
+    // ================= INIT PRODUCTS =================
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
+    // ================= INIT WISHLIST =================
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        if (isSignedIn) {
+            fetchWishlist();
+        } else {
+            setWishlistProducts([]);
+        }
+
+    }, [isSignedIn, isLoaded]);
+
+    // ================= TOGGLE WISHLIST =================
+    const toggleWishlist = async (productId) => {
+        try {
+            if (!isSignedIn) {
+                toast.error("Please sign in first");
+                return;
+            }
+
+            const token = await getToken();
+
+            if (!token) {
+                toast.error("Authentication failed");
+                return;
+            }
+
+            const { data } = await axios.post(
+                `${API_URL}/api/wishlist`,
+                { productId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (data.success) {
+                fetchWishlist();
+                toast.success(data.message);
+            }
+
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong");
+        }
+    };
+    // ================= HELPERS =================
+    const wishlistIds = wishlistProducts.map(p => p._id);
     const getWishListCount = () => wishlistIds.length;
 
     // ================= CART =================
@@ -135,7 +162,6 @@ const ShopContextProvider = (props) => {
                 if (Object.keys(updated[productId]).length === 0) {
                     delete updated[productId];
                 }
-
             } else {
                 updated[productId][size][color] = quantity;
             }
@@ -147,20 +173,19 @@ const ShopContextProvider = (props) => {
     const removeFromCart = (productId, size, color) => {
         updateQuantity(productId, size, color, 0);
     };
-    // ================= CONTEXT =================
+
+    // ================= CONTEXT VALUE =================
     const value = {
         products,
         currency,
         delivery_fee,
 
-        // CART
         cartItems,
         addToCart,
         getCartCount,
         updateQuantity,
         removeFromCart,
 
-        // WISHLIST
         wishlistProducts,
         wishlistIds,
         toggleWishlist,

@@ -1,17 +1,26 @@
 import React, { useState } from 'react'
 import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import Loading from '../components/Loading' // ✅ import your loader
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
     e.preventDefault()
 
+    if (loading) return
+
+    setLoading(true)
+
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post(`${API_URL}/api/auth/login`, {
         email,
         password
       })
@@ -19,20 +28,27 @@ const Login = () => {
       const user = res.data.user
       const token = res.data.token
 
-      // store correctly
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
 
-      // redirect based on role
+      toast.success('Login successful')
+
       if (user.role === 'admin') {
-        navigate('/admin')
-      } else {
         navigate('/account')
+      } else {
+        navigate('/')
       }
 
     } catch (err) {
-      alert(err.response?.data?.message || 'Login failed')
+      toast.error(err.response?.data?.message || 'Login failed')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  // ✅ USE SAME LOADING COMPONENT
+  if (loading) {
+    return <Loading />
   }
 
   return (
@@ -64,7 +80,10 @@ const Login = () => {
         </button>
 
         <p className="text-sm text-gray-600">
-          Don’t have an account? <Link to="/register" className="underline">Register</Link>
+          Don’t have an account?{' '}
+          <Link to="/register" className="underline">
+            Register
+          </Link>
         </p>
       </form>
 

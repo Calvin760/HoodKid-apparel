@@ -1,17 +1,23 @@
 import { Navigate } from 'react-router-dom'
+import { useAuth, useUser } from '@clerk/clerk-react'
 
 const AdminRoute = ({ children }) => {
-    const user = JSON.parse(localStorage.getItem('user'))
+    const { isSignedIn, isLoaded } = useAuth()
+    const { user } = useUser()
+
+    // still loading Clerk
+    if (!isLoaded) return null
 
     // not logged in
-    if (!user) {
-        console.log('not logged in')
+    if (!isSignedIn) {
         return <Navigate to="/login" replace />
     }
 
-    // logged in but NOT admin
-    if (user.role !== 'admin') {
-        console.log('not admin')
+    // check role from Clerk metadata
+    const role = user?.publicMetadata?.role
+
+    // not admin
+    if (role !== 'admin') {
         return <Navigate to="/" replace />
     }
 

@@ -2,10 +2,14 @@ import React, { useContext, useMemo, useState, useEffect } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import ProductItem from '../components/ProductItem'
 import { useLocation } from 'react-router-dom'
+import Loading from '../components/Loading'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const Collection = () => {
   const location = useLocation()
   const { products, toggleWishlist, wishlistIds, search } = useContext(ShopContext)
+  const [loading, setLoading] = useState(true)
 
   // UI state
   const [showFilters, setShowFilters] = useState(false)
@@ -13,6 +17,7 @@ const Collection = () => {
 
   // filter state
   const [category, setCategory] = useState('all')
+  const [subcategory, setSubcategory] = useState('all')
   const [gender, setGender] = useState('all')
   const [priceRange, setPriceRange] = useState('all')
   const [colour, setColour] = useState('all')
@@ -25,9 +30,22 @@ const Collection = () => {
     return imgs.map(img =>
       img.startsWith("http")
         ? img
-        : `http://localhost:5000/${img}`
+        : `${API_URL}/${img}`
     )
   }
+  useEffect(() => {
+    if (!products) return
+
+    setLoading(true)
+
+    // simulate processing/filtering delay (optional but smooth UI)
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 200)
+
+    return () => clearTimeout(timer)
+
+  }, [products])
 
   const filteredProducts = useMemo(() => {
     let list = [...products]
@@ -60,6 +78,24 @@ const Collection = () => {
       })
     }
 
+    if (subcategory !== 'all') {
+      const selected = subcategory.toLowerCase()
+
+      list = list.filter(p => {
+        if (!p.subcategory) return false
+
+        // if category is an array
+        if (Array.isArray(p.subcategory)) {
+          return p.subcategory.some(cat =>
+            String(cat).toLowerCase() === selected
+          )
+        }
+
+        // if category is a string
+        return String(p.subcategory).toLowerCase() === selected
+      })
+    }
+
     // 🚻 GENDER (case-insensitive)
     if (gender !== 'all') {
       const selected = gender.toLowerCase()
@@ -85,15 +121,15 @@ const Collection = () => {
     if (priceRange !== 'all') {
       list = list.filter(p => {
         const price = Number(p.price)
-        if (priceRange === 'low') return price < 1000
-        if (priceRange === 'mid') return price >= 1000 && price <= 3000
-        if (priceRange === 'high') return price > 3000
+        if (priceRange === 'low') return price < 300
+        if (priceRange === 'mid') return price >= 300 && price <= 500
+        if (priceRange === 'high') return price > 500
         return true
       })
     }
 
     return list
-  }, [products, category, gender, priceRange, colour, search])
+  }, [products, subcategory,category, gender, priceRange, colour, search])
 
   useEffect(() => {
     if (location.state) {
@@ -103,8 +139,17 @@ const Collection = () => {
       if (location.state.gender) {
         setGender(location.state.gender)
       }
+      if (location.state.subcategory) {
+        setSubcategory(location.state.subcategory)
+      }
     }
   }, [location.state])
+
+  
+
+  if (loading) {
+    return <Loading />
+  }
 
   return (
     <div className="max-w-[1400px] mx-auto px-4">
@@ -173,6 +218,16 @@ const Collection = () => {
               ))}
             </div>
 
+            {/* <div>
+              <h3 className="font-semibold mb-3">Subcategory</h3>
+              {['caution capsule', 'menace to the society', 'the boxed cropped t', 'anti pilling fleece'].map(item => (
+                <label key={item} className="flex items-center gap-2">
+                  <input type="radio" checked={subcategory === item} onChange={() => setSubcategory(item)} />
+                  <span className="capitalize">{item}</span>
+                </label>
+              ))}
+            </div> */}
+
             <div>
               <h3 className="font-semibold mb-3">Gender</h3>
               {['all', 'unisex', 'men', 'women'].map(item => (
@@ -189,13 +244,13 @@ const Collection = () => {
                 <input type="radio" checked={priceRange === 'all'} onChange={() => setPriceRange('all')} /> All
               </label>
               <label className="flex items-center gap-2">
-                <input type="radio" checked={priceRange === 'low'} onChange={() => setPriceRange('low')} /> Under 1,000
+                <input type="radio" checked={priceRange === 'low'} onChange={() => setPriceRange('low')} /> Under 300
               </label>
               <label className="flex items-center gap-2">
-                <input type="radio" checked={priceRange === 'mid'} onChange={() => setPriceRange('mid')} /> 1,000 – 3,000
+                <input type="radio" checked={priceRange === 'mid'} onChange={() => setPriceRange('mid')} /> 300 – 500
               </label>
               <label className="flex items-center gap-2">
-                <input type="radio" checked={priceRange === 'high'} onChange={() => setPriceRange('high')} /> Over 3,000
+                <input type="radio" checked={priceRange === 'high'} onChange={() => setPriceRange('high')} /> Over 500
               </label>
             </div>
           </div>
@@ -243,6 +298,7 @@ const Collection = () => {
                         : formatImages(item.image)
                     }
                     price={item.price}
+                    colours={item.colours}
                   />
 
                 </div>
@@ -301,6 +357,18 @@ const Collection = () => {
                 </div>
               )}
 
+              {/* {!activeFilter && (
+                <div>
+                  <h3 className="font-semibold mb-3">Subcategory</h3>
+                  {['caution capsule', 'menace to the society', 'the boxed cropped t', 'anti pilling fleece'].map(item => (
+                    <label key={item} className="flex items-center gap-2">
+                      <input type="radio" checked={subcategory === item} onChange={() => setSubcategory(item)} />
+                      <span className="capitalize">{item}</span>
+                    </label>
+                  ))}
+                </div>
+              )} */}
+
               {(activeFilter === null || activeFilter === 'gender') && (
                 <div>
                   <h3 className="font-semibold mb-3">Gender</h3>
@@ -337,13 +405,13 @@ const Collection = () => {
                     <input type="radio" checked={priceRange === 'all'} onChange={() => setPriceRange('all')} /> All
                   </label>
                   <label className="flex items-center gap-2 py-1">
-                    <input type="radio" checked={priceRange === 'low'} onChange={() => setPriceRange('low')} /> Under 1,000
+                    <input type="radio" checked={priceRange === 'low'} onChange={() => setPriceRange('low')} /> Under 300
                   </label>
                   <label className="flex items-center gap-2 py-1">
-                    <input type="radio" checked={priceRange === 'mid'} onChange={() => setPriceRange('mid')} /> 1,000 – 3,000
+                    <input type="radio" checked={priceRange === 'mid'} onChange={() => setPriceRange('mid')} /> 300 – 500
                   </label>
                   <label className="flex items-center gap-2 py-1">
-                    <input type="radio" checked={priceRange === 'high'} onChange={() => setPriceRange('high')} /> Over 3,000
+                    <input type="radio" checked={priceRange === 'high'} onChange={() => setPriceRange('high')} /> Over 500
                   </label>
                 </div>
               )}

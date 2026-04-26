@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ShopContext } from '../context/ShopContext'
 import { toast } from 'react-toastify'
 
+
 const WishList = () => {
 
   const {
@@ -11,7 +12,8 @@ const WishList = () => {
     toggleWishlist
   } = useContext(ShopContext)
 
-  const API_URL = "http://localhost:5000"
+  // const API_URL = "http://localhost:5000"
+  const API_URL = import.meta.env.VITE_API_URL
 
   // ================= EMPTY STATE =================
   if (!wishlistProducts.length) {
@@ -54,7 +56,7 @@ const WishList = () => {
 
               {/* IMAGE */}
               <Link to={`/product/${item._id}`}>
-                <div className="bg-gray-100 p-4">
+                <div className=" p-4">
                   <img
                     src={
                       item.image?.[0]?.startsWith("http")

@@ -117,7 +117,7 @@ const Footer = () => {
                         HOODKID.
                     </h1>
                     <p className="text-xs text-gray-400 mt-2">
-                        Level up your look.
+                        WEAR IF YOU'RE REAL.
                     </p>
                     
                     <div className="flex gap-4 mt-5 items-center">
@@ -141,14 +141,14 @@ const Footer = () => {
 
                             <Link
                                 to="/collection"
-                                state={{ gender: 'male' }}
+                                state={{ gender: 'men' }}
                             >
                                 Men
                             </Link>
 
                             <Link
                                 to="/collection"
-                                state={{ gender: 'female' }}
+                                state={{ gender: 'women' }}
                             >
                                 Women
                             </Link>

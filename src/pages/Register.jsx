@@ -1,28 +1,52 @@
 import React, { useState } from 'react'
 import axios from 'axios'
 import { useNavigate, Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import Loading from '../components/Loading'
+
+const API_URL = import.meta.env.VITE_API_URL
 
 const Register = () => {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
+
     const navigate = useNavigate()
 
     const handleRegister = async (e) => {
         e.preventDefault()
 
-        try {
-            await axios.post('http://localhost:5000/api/auth/register', {
-                name,
-                email,
-                password
-            })
+        if (loading) return
 
-            navigate('/login')
+        setLoading(true)
+
+        try {
+            const { data } = await axios.post(
+                `${API_URL}/api/auth/register`,
+                {
+                    name,
+                    email,
+                    password
+                }
+            )
+
+            toast.success(data.message || "Account created successfully")
+
+            setTimeout(() => {
+                navigate('/login')
+            }, 1200)
 
         } catch (err) {
-            alert(err.response?.data?.message || 'Register failed')
+            toast.error(err.response?.data?.message || 'Register failed')
+        } finally {
+            setLoading(false)
         }
+    }
+
+    // ✅ SAME LOADING STYLE AS LOGIN
+    if (loading) {
+        return <Loading />
     }
 
     return (
@@ -63,7 +87,10 @@ const Register = () => {
                 </button>
 
                 <p className="text-sm text-gray-600">
-                    Already have an account? <Link to="/login" className="underline">Login</Link>
+                    Already have an account?{' '}
+                    <Link to="/login" className="underline">
+                        Login
+                    </Link>
                 </p>
             </form>
 

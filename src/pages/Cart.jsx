@@ -2,7 +2,8 @@ import React, { useContext, useMemo } from "react";
 import { ShopContext } from "../context/ShopContext";
 import { Link } from "react-router-dom";
 
-const API_URL = "http://localhost:5000";
+// const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL
 
 const Cart = () => {
   const {
@@ -49,9 +50,11 @@ const Cart = () => {
 
   if (cartData.length === 0) {
     return (
-      <div className="p-10 text-center">
-        Cart is empty
-        <br />
+      <div className="max-w-4xl mx-auto p-10 text-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          Cart is empty
+        </h2>
+      
         <Link to="/" className="underline">
           Continue shopping
         </Link>

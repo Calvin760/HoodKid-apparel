@@ -3,14 +3,19 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
-import ShopContextProvide from './context/ShopContext.jsx'
+import ShopContextProvider from './context/ShopContext.jsx'
+import { ClerkProvider } from "@clerk/clerk-react";
+
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-
-    <ShopContextProvide>
-        <App />
-    </ShopContextProvide>
-
-  </BrowserRouter>,
+  <StrictMode>
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <BrowserRouter>
+        <ShopContextProvider>
+          <App />
+        </ShopContextProvider>
+      </BrowserRouter>
+    </ClerkProvider>
+  </StrictMode>
 )

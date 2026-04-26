@@ -11,70 +11,29 @@ import {
   FiPackage,
   FiUser
 } from "react-icons/fi";
-import axios from "axios";
+import { useUser, useClerk } from "@clerk/clerk-react";
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
+
   const { setShowSearch, getCartCount, getWishListCount, search } =
     useContext(ShopContext);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  // ================= CLERK AUTH =================
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-    navigate("/login");
+  const handleLogin = () => {
+    window.location.href = "https://flowing-hen-56.accounts.dev/sign-in";
   };
 
-  /* ================= SYNC TOKEN ================= */
-  useEffect(() => {
-    const syncToken = () => {
-      setToken(localStorage.getItem("token"));
-    };
-
-    window.addEventListener("storage", syncToken);
-
-    // also check on focus (important for same-tab login)
-    window.addEventListener("focus", syncToken);
-
-    return () => {
-      window.removeEventListener("storage", syncToken);
-      window.removeEventListener("focus", syncToken);
-    };
-  }, []);
-
-  /* ================= FETCH USER ================= */
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        if (!token) {
-          setUser(null);
-          return;
-        }
-
-        const { data } = await axios.get(
-          "http://localhost:5000/api/auth/me",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setUser(data.user || data);
-      } catch (err) {
-        console.log(err);
-        setUser(null);
-      }
-    };
-
-    fetchUser();
-  }, [token]); // ✅ KEY FIX
+  const logout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   /* ================= LOCK BODY SCROLL ================= */
   useEffect(() => {
@@ -110,9 +69,11 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           <Link to="/cart" className="relative">
             <FiShoppingCart className="w-6 h-6" />
-            <span className="absolute -right-1.5 -bottom-1.5 w-4 h-4 flex items-center justify-center text-[9px] bg-black text-white">
-              {getCartCount()}
-            </span>
+            {getCartCount() > 0 && (
+              <span className="absolute -right-1.5 -bottom-1.5 w-4 h-4 flex items-center justify-center text-[9px] bg-black text-white">
+                {getCartCount()}
+              </span>
+            )}
           </Link>
 
           <Link to="/account" className="relative">
@@ -178,20 +139,16 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* PROFILE */}
+          {/* PROFILE (CLERK) */}
           {user ? (
             <div className="group relative">
               <FiUser className="w-7 h-7" />
 
               <div className="group-hover:block hidden absolute right-0 pt-4">
                 <div className="flex flex-col gap-2 w-44 py-3 px-5 bg-white text-black border shadow-md">
-                  <Link to="/account" className="hover:opacity-70">
-                    My Profile
-                  </Link>
-                  <Link to="/orders" className="hover:opacity-70">
-                    Orders
-                  </Link>
-                  <button onClick={logout} className="text-left hover:opacity-70">
+                  <Link to="/account">My Profile</Link>
+                  <Link to="/orders">Orders</Link>
+                  <button onClick={logout} className="text-left">
                     Logout
                   </button>
                 </div>
@@ -199,7 +156,7 @@ const Navbar = () => {
             </div>
           ) : (
             <button
-              onClick={() => navigate("/login")}
+              onClick={handleLogin}
               className="border px-4 py-2 text-sm"
             >
               Login
@@ -208,7 +165,6 @@ const Navbar = () => {
 
         </div>
       </div>
-
       {/* ================= MOBILE SIDEBAR ================= */}
       <div className={`fixed inset-0 z-50 ${visible ? "block" : "hidden"}`}>
         <div
@@ -278,9 +234,9 @@ const Navbar = () => {
           <div className="absolute bottom-0 left-0 w-full border-t px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white text-sm">
-                {(user?.name?.charAt(0) || "U").toUpperCase()}
+                {(user?.firstName?.charAt(0).toUpperCase() || "U").toUpperCase()}
               </div>
-              <p className="font-medium">{user?.name || ""}</p>
+              <p className="font-medium">{user?.firstName || ""}</p>
             </div>
 
             {user ? (
@@ -289,7 +245,7 @@ const Navbar = () => {
               </button>
             ) : (
               <button
-                onClick={() => navigate("/login")}
+                onClick={handleLogin}
                 className="text-sm hover:underline"
               >
                 Login

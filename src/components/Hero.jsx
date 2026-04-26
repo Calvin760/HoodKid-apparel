@@ -24,18 +24,18 @@ const Hero = () => {
         {/* Text BELOW image */}
         <div className="text-center px-6 py-6 flex flex-col items-center">
           <h1 className="text-2xl font-bold tracking-wide">
-            NEW SEASON DROP
+            ANTI-PILLING FLEECE
           </h1>
 
           {/* CTA group */}
           <div className="flex flex-col items-center mt-2 gap-1">
             <p className="text-gray-600 text-xs tracking-widest">
-              LEVEL UP YOUR LOOK
+              Soft feel. No compromises.
             </p>
 
             <Link
               to="/collection"
-              state={{ category: 'hoodies', gender: 'unisex' }} // 👈 change based on hero
+              state={{ subcategory: 'anti pilling fleece' }} // 👈 change based on hero
             >
               <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
                 SHOP NOW
@@ -78,7 +78,7 @@ const Hero = () => {
           
           <Link
             to="/collection"
-            state={{ category: 'hoodies', gender: 'unisex' }} // 👈 change based on hero
+            state={{ subcategory: 'anti pilling fleece' }} // 👈 change based on hero
           >
             <button className="mt-6 px-6 py-2 bg-white text-black text-sm font-semibold hover:bg-black hover:text-white transition">
               SHOP NOW
