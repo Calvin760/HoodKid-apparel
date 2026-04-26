@@ -76,11 +76,29 @@ const Navbar = () => {
                 {getCartCount()}
               </span>
             )}
+
           </Link>
 
-          <Link to="/account" className="relative">
+          {user ? (
+            <div className="group relative">
+
+              <Link to="/account" className="relative">
+                <FiUser className="w-6 h-6" />
+              </Link>
+
+            </div>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="border px-4 py-2 text-sm"
+            >
+              Login
+            </button>
+          )}
+          
+          {/* <Link to="/account" className="relative">
             <FiUser className="w-6 h-6" />
-          </Link>
+          </Link> */}
         </div>
       </div>
 

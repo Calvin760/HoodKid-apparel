@@ -2,14 +2,19 @@ import React, { useContext, useMemo, useState } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import { toast } from 'react-toastify'
 import axios from "axios"
-import { useAuth } from "@clerk/clerk-react" // ✅ ADDED
+import { useAuth } from "@clerk/clerk-react"
 
 const API_URL = import.meta.env.VITE_API_URL
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL
+
+// PayFast (safe frontend env values only)
+const PAYFAST_PROCESS_URL = import.meta.env.VITE_PAYFAST_PROCESS_URL
+const PAYFAST_MERCHANT_ID = import.meta.env.VITE_PAYFAST_MERCHANT_ID
+const PAYFAST_MERCHANT_KEY = import.meta.env.VITE_PAYFAST_MERCHANT_KEY
 
 const PlaceOrder = () => {
-
   const { cartItems, products, currency } = useContext(ShopContext)
-  const { getToken } = useAuth() // ✅ ADDED
+  const { getToken } = useAuth()
 
   const [deliveryMethod, setDeliveryMethod] = useState("delivery")
 
@@ -61,14 +66,16 @@ const PlaceOrder = () => {
   })
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    })
   }
 
   // ================= ORDER =================
   const handlePlaceOrder = async () => {
     try {
-      const token = await getToken() // ✅ CHANGED
-      // console.log("CLERK TOKEN:", token);
+      const token = await getToken()
 
       if (!token) {
         toast.error("Please login to place an order")
@@ -80,7 +87,6 @@ const PlaceOrder = () => {
         return
       }
 
-      // ✅ VALIDATION
       if (!form.email) {
         toast.error("Email is required")
         return
@@ -103,24 +109,23 @@ const PlaceOrder = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${token}` // ✅ SAME HEADER, NEW TOKEN SOURCE
+            Authorization: `Bearer ${token}`
           }
         }
       )
 
       const orderId = data.orderId
-      const URL = 'http://192.168.0.5:5173'
 
       // ================= PAYFAST =================
       const formEl = document.createElement("form")
       formEl.method = "POST"
-      formEl.action = "https://sandbox.payfast.co.za/eng/process"
+      formEl.action = PAYFAST_PROCESS_URL
 
       const fields = {
-        merchant_id: "10000100",
-        merchant_key: "46f0cd694581a",
-        return_url: `${URL}/payment-success`,
-        cancel_url: `${URL}/cancel`,
+        merchant_id: PAYFAST_MERCHANT_ID,
+        merchant_key: PAYFAST_MERCHANT_KEY,
+        return_url: `${FRONTEND_URL}/payment-success`,
+        cancel_url: `${FRONTEND_URL}/cancel`,
         notify_url: `${API_URL}/api/payfast/notify`,
         m_payment_id: orderId,
         amount: total,
@@ -152,8 +157,8 @@ const PlaceOrder = () => {
         <button
           onClick={() => setDeliveryMethod("delivery")}
           className={`px-5 py-2 text-sm font-medium transition ${deliveryMethod === "delivery"
-            ? "bg-black text-white"
-            : "text-gray-600"
+              ? "bg-black text-white"
+              : "text-gray-600"
             }`}
         >
           Delivery
@@ -162,8 +167,8 @@ const PlaceOrder = () => {
         <button
           onClick={() => setDeliveryMethod("pickup")}
           className={`px-5 py-2 text-sm font-medium transition ${deliveryMethod === "pickup"
-            ? "bg-black text-white"
-            : "text-gray-600"
+              ? "bg-black text-white"
+              : "text-gray-600"
             }`}
         >
           Pickup
@@ -177,8 +182,11 @@ const PlaceOrder = () => {
 
           <div>
             <h2 className="text-2xl font-semibold">
-              {deliveryMethod === "delivery" ? "Delivery Details" : "Pickup Details"}
+              {deliveryMethod === "delivery"
+                ? "Delivery Details"
+                : "Pickup Details"}
             </h2>
+
             <p className="text-sm text-gray-500">
               {deliveryMethod === "delivery"
                 ? "Enter your delivery information"
@@ -258,19 +266,21 @@ const PlaceOrder = () => {
               </div>
             </div>
           )}
-
         </div>
 
         {/* ================= SUMMARY ================= */}
         <div className="lg:sticky top-20 h-fit border p-6 shadow-sm space-y-4">
-
           <h2 className="text-xl font-semibold">Order Summary</h2>
 
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {cartData.map((item, i) => (
               <div key={i} className="flex justify-between text-sm">
-                <span>{item.name} × {item.quantity}</span>
-                <span>{currency}{item.price * item.quantity}</span>
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
+                <span>
+                  {currency}{item.price * item.quantity}
+                </span>
               </div>
             ))}
           </div>
@@ -298,9 +308,7 @@ const PlaceOrder = () => {
           >
             Pay {currency}{total}
           </button>
-
         </div>
-
       </div>
     </div>
   )
