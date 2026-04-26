@@ -13,8 +13,10 @@ import {
 } from "react-icons/fi";
 import { useUser, useClerk } from "@clerk/clerk-react";
 
+
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
+  const { openSignIn } = useClerk();
 
   const { setShowSearch, getCartCount, getWishListCount, search } =
     useContext(ShopContext);
@@ -27,7 +29,7 @@ const Navbar = () => {
   const { signOut } = useClerk();
 
   const handleLogin = () => {
-    window.location.href = "https://flowing-hen-56.accounts.dev/sign-in";
+    openSignIn();
   };
 
   const logout = async () => {
