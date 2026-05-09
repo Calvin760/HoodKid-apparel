@@ -25,7 +25,7 @@ const ProductItem = ({ id, image, name, price, colours}) => {
           alt={name}
           loading="lazy"
           decoding="async"
-          fetchpriority="low"
+          fetchPriority="low"
           className="object-contain transition duration-300 group-hover:scale-105"
         />
 

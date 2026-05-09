@@ -12,7 +12,6 @@ import {
   FiUser
 } from "react-icons/fi";
 import { useUser, useClerk } from "@clerk/clerk-react";
-import Loading from "./Loading";
 
 
 const Navbar = () => {
@@ -46,6 +45,14 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const handleLogoClick = () => {
+    if (window.location.pathname === "/") {
+      window.location.reload();
+    } else {
+      window.location.href = "/";
+    }
+  };
+
   /* ================= LOCK BODY SCROLL ================= */
   useEffect(() => {
     document.body.style.overflow = visible ? "hidden" : "auto";
@@ -75,10 +82,11 @@ const Navbar = () => {
           />
         </div>
 
-        <Link to="/">
-          <h1 className="text-lg font-semibold tracking-wide">HOODKID.</h1>
-        </Link>
-
+          <h1 
+          onClick={handleLogoClick}
+          className="text-lg font-semibold tracking-wide cursor-pointer"
+          >HOODKID.</h1>
+        
         <div className="flex items-center gap-4">
           <Link to="/cart" className="relative">
             <FiShoppingCart className="w-6 h-6" />
@@ -115,9 +123,12 @@ const Navbar = () => {
 
       {/* ================= DESKTOP NAV ================= */}
       <div className="hidden sm:flex items-center justify-between py-6 px-2">
-        <Link to="/">
-          <h1 className="text-2xl font-bold tracking-wide">HOODKID.</h1>
-        </Link>
+        
+        <h1 
+          onClick={handleLogoClick}
+          className="text-2xl font-bold tracking-wide cursor-pointer"
+        >HOODKID.</h1>
+       
 
         <ul className="flex gap-8 text-base">
           {[

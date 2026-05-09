@@ -25,14 +25,6 @@ const FreshDrop = () => {
             : `${API_URL}/${product.video}`;
     };
 
-    const getImage = (product) => {
-        if (!product?.image?.length) return null;
-
-        const img = product.image[0];
-        return img.startsWith("http")
-            ? img
-            : `${API_URL}/${img}`;
-    };
 
     const heroVideo = optimizeCloudinaryVideo(
         getVideo(heroProduct)
