@@ -4,6 +4,7 @@ import { assets } from '../assets/assets'
 import { Link } from 'react-router-dom'
 import ProductItem from './ProductItem'
 import Loading from './Loading'
+import { optimizeCloudinaryVideo } from "../utils/cloudinary";
 
 const BestSeller = () => {
 
@@ -59,7 +60,9 @@ const BestSeller = () => {
             : `${API_URL}/${product.video}`;
     };
 
-    const heroVideo1 = getVideo(heroProduct);
+    const heroVideo1 = optimizeCloudinaryVideo(
+        getVideo(heroProduct)
+    );
     // console.log("HERO PRODUCT", heroProduct)
 
     
@@ -80,6 +83,7 @@ const BestSeller = () => {
                         loop
                         muted
                         playsInline
+                        preload="metadata"
                     >
                         <source src={heroVideo1} type="video/mp4" />
                     </video>
@@ -117,6 +121,7 @@ const BestSeller = () => {
                     loop
                     muted
                     playsInline
+                    preload="metadata"
                 >
                     <source src={heroVideo1} type="video/mp4" />
                 </video>

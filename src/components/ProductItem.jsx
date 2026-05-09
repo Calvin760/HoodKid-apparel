@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import { Link } from 'react-router-dom'
+import { optimizeCloudinaryImage } from "../utils/cloudinary";
 
 const ProductItem = ({ id, image, name, price, colours}) => {
 
@@ -20,7 +21,7 @@ const ProductItem = ({ id, image, name, price, colours}) => {
       <div className="relative bg-[#f5f5f5] aspect-square flex items-center justify-center overflow-hidden">
 
         <img
-          src={image[0]}
+          src={optimizeCloudinaryImage(image[0], 600)}
           alt={name}
           loading="lazy"
           decoding="async"

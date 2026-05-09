@@ -1,6 +1,7 @@
 import { React, useContext } from 'react';
 import { Link } from 'react-router-dom'
 import { ShopContext } from "../context/ShopContext";
+import { optimizeCloudinaryVideo } from "../utils/cloudinary";
 
 
 const FreshDrop = () => {
@@ -33,8 +34,12 @@ const FreshDrop = () => {
             : `${API_URL}/${img}`;
     };
 
-    const heroVideo = getVideo(heroProduct);
-    const heroVideo2 = getVideo(heroProduct2);
+    const heroVideo = optimizeCloudinaryVideo(
+        getVideo(heroProduct)
+    );
+    const heroVideo2 = optimizeCloudinaryVideo(
+        getVideo(heroProduct2)
+    );
     // const heroImage = getImage(heroProduct);
 
     if (!heroProduct) return null;
@@ -50,6 +55,7 @@ const FreshDrop = () => {
                     loop
                     muted
                     playsInline
+                    preload="metadata"
                 >
                     <source src={heroVideo} type="video/mp4" />
                 </video>
@@ -110,6 +116,7 @@ const FreshDrop = () => {
                             loop
                             muted
                             playsInline
+                            preload="metadata"
                         >
                             {/* 🔥 YOUR PORTRAIT PRODUCT VIDEO */}
                             <source src={heroVideo2} type="video/mp4" />
