@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useClerk } from "@clerk/clerk-react";
 
 export const ShopContext = createContext();
 
@@ -25,6 +25,7 @@ const ShopContextProvider = (props) => {
     const [wishlistProducts, setWishlistProducts] = useState([]);
     const [search, setSearch] = useState("");
     const [showSearch, setShowSearch] = useState(false);
+    const { openSignIn } = useClerk()
 
     // ================= FETCH PRODUCTS =================
     const fetchProducts = async () => {
@@ -85,7 +86,11 @@ const ShopContextProvider = (props) => {
         try {
 
             if (!isSignedIn) {
-                toast.error("Please sign in first");
+                openSignIn({
+                    afterSignInUrl: window.location.pathname,
+                    afterSignUpUrl: window.location.pathname,
+                })
+                
                 return;
             }
 

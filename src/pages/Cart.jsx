@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from "react";
 import { ShopContext } from "../context/ShopContext";
 import { Link } from "react-router-dom";
+import { useAuth, useClerk } from "@clerk/clerk-react";
 
 // const API_URL = "http://localhost:5000";
 const API_URL = import.meta.env.VITE_API_URL
@@ -14,6 +15,8 @@ const Cart = () => {
     removeFromCart
   } = useContext(ShopContext);
 
+  const { isSignedIn } = useAuth()
+  const { openSignIn } = useClerk()
   // ================= BUILD CART =================
   const cartData = useMemo(() => {
     const items = [];
@@ -184,11 +187,21 @@ const Cart = () => {
             <span>{currency}{total}</span>
           </div>
 
-          <Link to="/place-order">
-            <button className="w-full bg-black text-white py-3 mt-6">
-              Checkout
-            </button>
-          </Link>
+          <button
+            onClick={() => {
+              if (!isSignedIn) {
+                openSignIn({
+                  afterSignInUrl: "/place-order",
+                  afterSignUpUrl: "/place-order",
+                })
+              } else {
+                window.location.href = "/place-order"
+              }
+            }}
+            className="w-full bg-black text-white py-3 mt-6"
+          >
+            Checkout
+          </button>
 
         </div>
 
