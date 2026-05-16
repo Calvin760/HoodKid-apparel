@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useMemo } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
@@ -17,7 +17,11 @@ const ShopContextProvider = (props) => {
 
     // ================= STATE =================
     const [products, setProducts] = useState([]);
-    const [cartItems, setCartItems] = useState({});
+    const [cartItems, setCartItems] = useState(() => {
+        const savedCart = localStorage.getItem("cart");
+
+        return savedCart ? JSON.parse(savedCart) : {};
+    });
     const [wishlistProducts, setWishlistProducts] = useState([]);
     const [search, setSearch] = useState("");
     const [showSearch, setShowSearch] = useState(false);
@@ -79,6 +83,7 @@ const ShopContextProvider = (props) => {
     // ================= TOGGLE WISHLIST =================
     const toggleWishlist = async (productId) => {
         try {
+
             if (!isSignedIn) {
                 toast.error("Please sign in first");
                 return;
@@ -91,6 +96,28 @@ const ShopContextProvider = (props) => {
                 return;
             }
 
+            const alreadyExists = wishlistIds.includes(productId);
+
+            // ================= OPTIMISTIC UPDATE =================
+            if (alreadyExists) {
+                setWishlistProducts(prev =>
+                    prev.filter(item => item._id !== productId)
+                );
+            } else {
+
+                const product = products.find(
+                    p => p._id === productId
+                );
+
+                if (product) {
+                    setWishlistProducts(prev => [
+                        ...prev,
+                        product
+                    ]);
+                }
+            }
+
+            // ================= API REQUEST =================
             const { data } = await axios.post(
                 `${API_URL}/api/wishlist`,
                 { productId },
@@ -101,18 +128,25 @@ const ShopContextProvider = (props) => {
                 }
             );
 
-            if (data.success) {
+            if (!data.success) {
                 fetchWishlist();
-                toast.success(data.message);
             }
 
         } catch (error) {
+
             console.log(error);
+
+            // rollback
+            fetchWishlist();
+
             toast.error("Something went wrong");
         }
     };
     // ================= HELPERS =================
-    const wishlistIds = wishlistProducts.map(p => p._id);
+    const wishlistIds = useMemo(
+        () => wishlistProducts.map(p => p._id),
+        [wishlistProducts]
+    );
     const getWishListCount = () => wishlistIds.length;
 
     // ================= CART =================
@@ -131,6 +165,13 @@ const ShopContextProvider = (props) => {
             return updated;
         });
     };
+
+    useEffect(() => {
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(cartItems)
+        );
+    }, [cartItems]);
 
     const getCartCount = () => {
         let total = 0;

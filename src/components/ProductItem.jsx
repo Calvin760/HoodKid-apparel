@@ -6,8 +6,6 @@ import { optimizeCloudinaryImage } from "../utils/cloudinary";
 const ProductItem = ({ id, image, name, price, colours}) => {
 
   const { currency } = useContext(ShopContext)
-
-  // console.log('Colours', colours)
   
   const colourCount = (colours || []).length
 
@@ -34,7 +32,6 @@ const ProductItem = ({ id, image, name, price, colours}) => {
       {/* INFO */}
       <div className="mt-3 px-1">
 
-        {/* SAME UI — just dynamic */}
         <p className="text-[10px] tracking-widest text-gray-500 uppercase">
           {colourCount > 0
             ? `${colourCount} COLOUR${colourCount > 1 ? "S" : ""}`

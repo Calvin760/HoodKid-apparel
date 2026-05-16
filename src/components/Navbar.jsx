@@ -46,10 +46,10 @@ const Navbar = () => {
   };
 
   const handleLogoClick = () => {
-    if (window.location.pathname === "/") {
+    if (location.pathname === "/") {
       window.location.reload();
     } else {
-      window.location.href = "/";
+      navigate("/");
     }
   };
 
@@ -115,9 +115,6 @@ const Navbar = () => {
             </button>
           )}
           
-          {/* <Link to="/account" className="relative">
-            <FiUser className="w-6 h-6" />
-          </Link> */}
         </div>
       </div>
 
