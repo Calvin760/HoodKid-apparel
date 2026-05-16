@@ -12,7 +12,7 @@ const WishList = () => {
     toggleWishlist
   } = useContext(ShopContext)
 
-  // const API_URL = "http://localhost:5000"
+ 
   const API_URL = import.meta.env.VITE_API_URL
 
   // ================= EMPTY STATE =================
@@ -22,8 +22,11 @@ const WishList = () => {
         <h2 className="text-2xl font-semibold mb-4">
           Your Wishlist is Empty
         </h2>
-        <Link to="/" className="underline">
-          Explore Products
+        <Link to="/collection">
+          
+          <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
+            Explore Products
+          </button>
         </Link>
       </div>
     )

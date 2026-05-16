@@ -19,11 +19,23 @@ const PlaceOrder = () => {
   const [deliveryMethod, setDeliveryMethod] = useState("delivery")
 
   // ================= CART =================
+  const productMap = useMemo(() => {
+
+    return products.reduce((acc, product) => {
+
+      acc[product._id] = product
+
+      return acc
+
+    }, {})
+
+  }, [products])
+
   const cartData = useMemo(() => {
     const items = []
 
     for (const productId in cartItems) {
-      const product = products.find(p => p._id === productId)
+      const product = productMap[productId]
       if (!product) continue
 
       for (const size in cartItems[productId]) {
@@ -72,13 +84,19 @@ const PlaceOrder = () => {
     })
   }
 
+
   // ================= ORDER =================
   const handlePlaceOrder = async () => {
     try {
       const token = await getToken()
+      const { openSignIn } = useClerk();
 
       if (!token) {
-        toast.error("Please login to place an order")
+        // toast.error("Please login to place an order")
+        openSignIn({
+          afterSignInUrl: "/",
+          afterSignUpUrl: "/"
+        });
         return
       }
 

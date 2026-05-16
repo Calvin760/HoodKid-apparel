@@ -1,7 +1,20 @@
-import React from "react"
+import React, { useContext } from "react"
 import { Link } from "react-router-dom"
+import { ShopContext } from "../context/ShopContext";
+import { useEffect } from "react";
 
 const PaymentSuccess = () => {
+
+    const { setCartItems } = useContext(ShopContext);
+
+    useEffect(() => {
+
+        setCartItems({})
+
+        localStorage.removeItem("cart")
+
+    }, [setCartItems])
+
     return (
         <div className="h-screen flex items-center justify-center px-4">
 

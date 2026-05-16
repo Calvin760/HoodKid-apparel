@@ -52,11 +52,14 @@ const Cart = () => {
     return (
       <div className="max-w-4xl mx-auto p-10 text-center">
         <h2 className="text-2xl font-semibold mb-4">
-          Cart is empty
+          Your Cart is Empty
         </h2>
       
         <Link to="/" className="underline">
-          Continue shopping
+          
+          <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
+            Continue shopping
+          </button>
         </Link>
       </div>
     );

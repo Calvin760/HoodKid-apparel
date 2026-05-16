@@ -54,4 +54,4 @@ const ProductItem = ({ id, image, name, price, colours}) => {
   )
 }
 
-export default ProductItem
+export default React.memo(ProductItem);

@@ -109,9 +109,9 @@ const Navbar = () => {
           ) : (
             <button
               onClick={handleLogin}
-              className="border px-4 py-2 text-sm"
+              className="relative"
             >
-              Login
+              <FiUser className="w-6 h-6" />
             </button>
           )}
           

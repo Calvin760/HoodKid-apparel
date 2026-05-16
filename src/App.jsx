@@ -7,7 +7,6 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Cart from './pages/Cart'
 import Product from './pages/Product'
-import PlaceOrder from './pages/PlaceOrder'
 import Orders from './pages/Orders'
 import WishList from './pages/WishList'
 import Account from './pages/Account'
@@ -27,6 +26,7 @@ import AdminRoute from './components/AdminRoute'
 
 import './index.css'
 import { ToastContainer } from 'react-toastify'
+import PlaceOrder from './pages/place-order/PlaceOrder'
 
 const App = () => {
 

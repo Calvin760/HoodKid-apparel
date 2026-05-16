@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import Loading from '../components/Loading'
 import { useAuth } from '@clerk/clerk-react'
+import { Link } from 'react-router-dom'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -17,7 +18,6 @@ const Orders = () => {
     const fetchOrders = async () => {
       try {
 
-        // 🔥 Clerk session check (replaces localStorage)
         if (!isSignedIn) {
           setLoading(false)
           return
@@ -65,8 +65,17 @@ const Orders = () => {
 
   if (!orders.length) {
     return (
-      <div className="p-10 text-center">
-        <h2 className="text-xl font-semibold">No Orders Yet</h2>
+      <div className="max-w-4xl mx-auto p-10 text-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          You Don't Have Any Orders Yet
+        </h2>
+      
+        <Link to="/" className="underline">
+          
+          <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
+            Continue shopping
+          </button>
+        </Link>
       </div>
     )
   }
