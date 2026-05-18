@@ -10,7 +10,7 @@ const Hero = () => {
       <div className="block sm:hidden">
 
         {/* Image (cut bottom by reducing height) */}
-        <div className="w-full h-[75vh] overflow-hidden relative">
+        <div className="w-full h-[65vh] overflow-hidden relative">
           <img
             src={assets.p29}
             alt=""

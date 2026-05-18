@@ -29,7 +29,7 @@ const TopBar = () => {
     }, []);
 
     return (
-        <div className="w-full bg-black text-white text-center text-sm py-2 overflow-hidden">
+        <div className="w-full bg-white text-black text-center text-sm py-2 overflow-hidden">
 
             <div
                 className={`transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"

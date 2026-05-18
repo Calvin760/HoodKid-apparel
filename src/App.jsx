@@ -17,7 +17,6 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailed from './pages/PaymentFailed'
 import Profile from './pages/Profile'
 
-import Navbar from './components/Navbar'
 import TopBar from './components/TopBar'
 import Footer from './components/Footer'
 import SearchBar from './components/SearchBar'
@@ -27,6 +26,7 @@ import AdminRoute from './components/AdminRoute'
 import './index.css'
 import { ToastContainer } from 'react-toastify'
 import PlaceOrder from './pages/place-order/PlaceOrder'
+import Navbar from './components/navbar/Navbar'
 
 const App = () => {
 
@@ -57,7 +57,7 @@ const App = () => {
       <TopBar />
 
       {/* ================= NAVBAR ================= */}
-      <div className='sticky top-0 z-50 bg-white px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]'>
+      <div className='sticky top-0 z-50 bg-[#1a1a1a] px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]'>
         <Navbar />
         <SearchBar />
       </div>
