@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import ShopContextProvider from './context/ShopContext.jsx'
 import { ClerkProvider, ClerkLoaded, ClerkLoading } from "@clerk/clerk-react";
 import Loading from "./components/Loading";
+import { NavbarProvider } from './context/NavbarContext.jsx'
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -21,7 +22,10 @@ createRoot(document.getElementById('root')).render(
           </ClerkLoading>
 
           <ClerkLoaded>
-            <App />
+            <NavbarProvider>
+              <App />
+            </NavbarProvider>
+           
           </ClerkLoaded>
 
         </ShopContextProvider>

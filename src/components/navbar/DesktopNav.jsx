@@ -3,9 +3,9 @@ import { useContext, memo } from "react";
 import { FiShoppingCart, FiHeart, FiUser } from "react-icons/fi";
 
 import { ShopContext } from "../../context/ShopContext";
-import { useNavbar } from "../../hooks/useNavbar";
 import { assets } from "../../assets/assets";
 import { badge } from "../../styles/navbarClasses";
+import { useNavbar } from "../../context/NavbarContext";
 
 const NAV_LINKS = [
     { to: "/", label: "Home" },
