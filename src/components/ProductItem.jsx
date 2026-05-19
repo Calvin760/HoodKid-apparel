@@ -1,94 +1,60 @@
-import React, { useContext } from "react";
-import { ShopContext } from "../context/ShopContext";
-import { Link } from "react-router-dom";
+import React, { useContext } from 'react'
+import { ShopContext } from '../context/ShopContext'
+import { Link } from 'react-router-dom'
 import { optimizeCloudinaryImage } from "../utils/cloudinary";
 
-const ProductItem = ({ id, image, name, price, colours }) => {
-  const { currency } = useContext(ShopContext);
+const ProductItem = ({ id, image, name, price, colours}) => {
 
-  const colourCount = (colours || []).length;
+  const { currency } = useContext(ShopContext)
+  
+  const colourCount = (colours || []).length
 
   return (
     <>
-      <Link
-        to={`/product/${id}`}
-        className="group block animate-scaleIn"
-      >
-        {/* IMAGE CARD */}
-        <div className="relative bg-[#f5f5f5] aspect-square flex items-center justify-center overflow-hidden rounded-2xl">
+    <Link
+      to={`/product/${id}`}
+      className="group block"
+    >
 
-          {/* subtle glow */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition duration-500 z-10" />
+      {/* IMAGE CARD */}
+      <div className="relative bg-[#f5f5f5] aspect-square flex items-center justify-center overflow-hidden">
 
-          <img
-            src={optimizeCloudinaryImage(image[0], 600)}
-            alt={name}
-            loading="lazy"
-            decoding="async"
-            fetchPriority="low"
-            className="
-              object-contain
-              transition-all
-              duration-500
-              ease-out
-              group-hover:scale-105
-              group-hover:-translate-y-1
-            "
-          />
+        <img
+          src={optimizeCloudinaryImage(image[0], 600)}
+          alt={name}
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
+          className="object-contain transition duration-300 group-hover:scale-105"
+        />
 
-          {/* hover overlay */}
-          <div
-            className="
-              absolute bottom-0 left-0 right-0
-              bg-black/80 text-white
-              text-[11px] tracking-widest
-              py-3 text-center
-              translate-y-full
-              group-hover:translate-y-0
-              transition-transform duration-300
-              uppercase z-20
-            "
-          >
-            View Product
-          </div>
+      </div>
+
+      {/* INFO */}
+      <div className="mt-3 px-1">
+
+        <p className="text-[10px] tracking-widest text-gray-500 uppercase">
+          {colourCount > 0
+            ? `${colourCount} COLOUR${colourCount > 1 ? "S" : ""}`
+            : "SINGLE COLOUR"}
+        </p>
+
+        <p className="mt-1 text-sm font-medium text-gray-900 leading-tight">
+          {name}
+        </p>
+
+        <div className="mt-1 flex items-center justify-between">
+          <p className="text-sm font-semibold text-black">
+            {currency} {price}
+          </p>
         </div>
 
-        {/* INFO */}
-        <div className="mt-4 px-1">
+      </div>
 
-          <p className="text-[10px] tracking-[0.25em] text-gray-500 uppercase">
-            {colourCount > 0
-              ? `${colourCount} COLOUR${colourCount > 1 ? "S" : ""}`
-              : "Single Colour"}
-          </p>
+    </Link>
 
-          <p
-            className="
-              mt-2
-              text-sm
-              font-semibold
-              text-gray-900
-              leading-tight
-              transition-colors
-              duration-300
-              group-hover:text-black
-            "
-          >
-            {name}
-          </p>
-
-          <div className="mt-2 flex items-center justify-between">
-
-            <p className="text-sm font-bold text-black">
-              {currency} {price}
-            </p>
-
-          </div>
-        </div>
-      </Link>
-
-      {/* STYLES */}
-      <style>{`
+          {/* STYLES */ }
+  <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap');
 
         * {
@@ -149,7 +115,7 @@ const ProductItem = ({ id, image, name, price, colours }) => {
         }
       `}</style>
     </>
-  );
-};
+  )
+}
 
 export default React.memo(ProductItem);
