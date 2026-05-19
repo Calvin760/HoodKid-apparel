@@ -1,218 +1,156 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { assets } from "../assets/assets"
+﻿
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { FiInstagram, FiTwitter, FiFacebook } from 'react-icons/fi';
+import { SiTiktok } from 'react-icons/si';
 
-const Footer = () => {
+const API_URL = import.meta.env.VITE_API_URL;
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+const FOOTER_SECTIONS = [
+    {
+        title: 'Shop', links: [
+            { label: 'New Arrivals', to: '/collection' },
+            { label: 'Men', to: '/collection', state: { gender: 'male' } },
+            { label: 'Women', to: '/collection', state: { gender: 'female' } },
+            { label: 'Sale', to: '/collection', state: { sale: true } },
+        ]
+    },
+    {
+        title: 'Support', links: [
+            { label: 'Help Center', to: '/help' },
+            { label: 'Shipping', to: '/shipping' },
+            { label: 'Returns', to: '/returns' },
+            { label: 'Order Status', to: '/orders' },
+        ]
+    },
+    {
+        title: 'About', links: [
+            { label: 'Our Story', to: '/about' },
+            { label: 'Sustainability', to: '/sustainability' },
+            { label: 'Careers', to: '/careers' },
+            { label: 'Contact', to: '/contact' },
+        ]
+    },
+];
+
+const SOCIALS = [
+    { icon: FiInstagram, label: 'Instagram', href: 'https://www.instagram.com/hoodkidapparel/' },
+    { icon: SiTiktok, label: 'TikTok', href: 'https://www.tiktok.com/@hoodkidapparel' },
+    { icon: FiFacebook, label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=100068642961395' },
+    { icon: FiTwitter, label: 'X (Twitter)', href: 'https://x.com/HoodkidApparel' },
+];
+
+const LEGAL_LINKS = [
+    { label: 'Privacy', to: '/privacy' },
+    { label: 'Terms', to: '/terms' },
+    { label: 'Cookies', to: '/cookies' },
+];
+
+const FooterColumn = ({ title, links }) => (
+    <div>
+        <h3 className="text-xs font-black uppercase tracking-widest mb-4 text-white">{title}</h3>
+        <ul className="space-y-3">
+            {links.map((link) => (
+                <li key={link.label}>
+                    <Link to={link.to} state={link.state} className="text-sm text-gray-400 hover:text-white transition-colors duration-200">{link.label}</Link>
+                </li>
+            ))}
+        </ul>
+    </div>
+);
+
+const SocialLinks = () => (
+    <div className="flex gap-4 items-center">
+        {SOCIALS.map(({ icon: Icon, label, href }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`HOODKID on ${label}`} className="w-9 h-9 rounded-full border border-gray-700 flex items-center justify-center text-gray-400 hover:border-white hover:text-white transition-colors duration-200">
+                <Icon size={16} strokeWidth={2} />
+            </a>
+        ))}
+    </div>
+);
+
+const Newsletter = () => {
+    const [email, setEmail] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [subscribed, setSubscribed] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!email.trim() || !isValidEmail(email)) { toast.error('Please enter a valid email'); return; }
+        setSubmitting(true);
+        try {
+            const { data } = await axios.post(`${API_URL}/api/newsletter/subscribe`, { email });
+            if (data?.success === false) throw new Error(data.message || 'Could not subscribe');
+            setSubscribed(true);
+            setEmail('');
+            toast.success('Thanks - you are subscribed!');
+        } catch (err) {
+            console.error('Newsletter subscribe failed:', err);
+            toast.error(err.response?.data?.message || err.message || 'Could not subscribe. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (subscribed) {
+        return (
+            <div>
+                <h3 className="text-xs font-black uppercase tracking-widest mb-4 text-white">Join Us</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">You are on the list. Watch your inbox for the next drop.</p>
+            </div>
+        );
+    }
+
     return (
-        <footer className="bg-[#111111] text-gray-100 mt-20 border-t border-gray-800">
+        <div>
+            <h3 className="text-xs font-black uppercase tracking-widest mb-4 text-white">Join Us</h3>
+            <p className="text-sm text-gray-400 mb-4 leading-relaxed">Get updates on new drops and exclusive offers.</p>
+            <form onSubmit={handleSubmit} noValidate>
+                <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+                <input id="newsletter-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" disabled={submitting} className="w-full px-3 py-2.5 text-sm bg-gray-900 text-white border border-gray-700 placeholder-gray-500 focus:border-white outline-none transition-colors duration-200 disabled:opacity-50" />
+                <button type="submit" disabled={submitting} className="mt-3 w-full bg-white text-black py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+                    {submitting ? 'Subscribing...' : 'Subscribe'}
+                </button>
+            </form>
+        </div>
+    );
+};
 
-            {/* ================= DESKTOP FOOTER ================= */}
-            <div className="hidden sm:grid grid-cols-4 gap-10 px-10 py-14 max-w-6xl mx-auto">
-
-                {/* Column 1 */}
-                <div>
-                    <h3 className="text-sm font-semibold tracking-widest mb-4">
-                        SHOP
-                    </h3>
-                    <ul className="space-y-2 text-sm text-gray-400">
-
-                        <li>
-                            <Link to="/collection">
-                                New Arrivals
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                to="/collection"
-                                state={{ gender: 'male' }}
-                            >
-                                Men
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                to="/collection"
-                                state={{ gender: 'female' }}
-                            >
-                                Women
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link to="/collection">
-                                Sale
-                            </Link>
-                        </li>
-
-                    </ul>
-                </div>
-
-                {/* Column 2 */}
-                <div>
-                    <h3 className="text-sm font-semibold tracking-widest mb-4">
-                        SUPPORT
-                    </h3>
-                    <ul className="space-y-2 text-sm text-gray-400">
-                        <li>Help Center</li>
-                        <li>Shipping</li>
-                        <li>Returns</li>
-                        <li>Order Status</li>
-                    </ul>
-                </div>
-
-                {/* Column 3 */}
-                <div>
-                    <h3 className="text-sm font-semibold tracking-widest mb-4">
-                        ABOUT
-                    </h3>
-                    <ul className="space-y-2 text-sm text-gray-400">
-                        <li>Our Story</li>
-                        <li>Sustainability</li>
-                        <li>Careers</li>
-                        <li>Investors</li>
-                    </ul>
-                </div>
-
-                {/* Column 4 */}
-                <div>
-                    <h3 className="text-sm font-semibold tracking-widest mb-4">
-                        JOIN US
-                    </h3>
-
-                    <p className="text-sm text-gray-400 mb-3">
-                        Get updates on new drops and exclusive offers.
-                    </p>
-
-                    <input
-                        type="email"
-                        placeholder="Email address"
-                        className="w-full px-3 py-2 text-sm bg-gray-900 text-white outline-none border border-gray-700 placeholder-gray-500"
-                    />
-
-                    <button className="mt-3 w-full bg-white text-black py-2 text-sm font-semibold hover:bg-gray-200 transition">
-                        SUBSCRIBE
-                    </button>
-
-                    {/* SOCIAL ICONS */}
-                    <div className="flex gap-4 mt-5 items-center">
-                        <Link to='https://www.instagram.com/hoodkidapparel/'>
-                            <img src={assets.instagram} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" />
-                        </Link>
-                        <Link to='https://www.tiktok.com/@hoodkidapparel'><img src={assets.tiktok} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" /> </Link>
-                        <Link to='https://www.facebook.com/profile.php?id=100068642961395'><img src={assets.facebook} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" /> </Link>
-                        <Link to='https://x.com/HoodkidApparel'><img src={assets.x} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" /></Link>
-                    </div>
-                </div>
-
+const Footer = () => (
+    <footer className="bg-[#111111] text-gray-100 mt-20 border-t border-gray-800">
+        <div className="px-6 sm:px-10 py-12 sm:py-16 max-w-6xl mx-auto">
+            <div className="sm:hidden mb-10">
+                <Link to="/" className="inline-block">
+                    <h2 className="text-2xl font-black tracking-tight text-white">HOODKID.</h2>
+                </Link>
+                <p className="text-xs uppercase tracking-widest text-gray-400 mt-2">Wear If You are Real</p>
+                <div className="mt-5"><SocialLinks /></div>
             </div>
-
-            {/* ================= MOBILE FOOTER ================= */}
-            <div className="sm:hidden px-6 py-10 space-y-8">
-
-                {/* Brand */}
-                <div>
-                    <h1 className="text-lg font-bold tracking-widest">
-                        HOODKID.
-                    </h1>
-                    <p className="text-xs text-gray-400 mt-2">
-                        WEAR IF YOU'RE REAL.
-                    </p>
-                    
-                    <div className="flex gap-4 mt-5 items-center">
-                        <Link to='https://www.instagram.com/hoodkidapparel/'>
-                            <img src={assets.instagram} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" />
-                        </Link>
-                        <Link to='https://www.tiktok.com/@hoodkidapparel'><img src={assets.tiktok} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" /> </Link>
-                        <Link to='https://www.facebook.com/profile.php?id=100068642961395'><img src={assets.facebook} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" /> </Link>
-                        <Link to='https://x.com/HoodkidApparel'><img src={assets.x} className="w-5 h-5 invert cursor-pointer hover:scale-110 transition" /></Link>
-                    </div>
-                </div>
-
-                {/* Sections */}
-                <div className="space-y-6 text-sm">
-
-                    <div>
-                        <h3 className="font-semibold mb-2 tracking-widest">SHOP</h3>
-                        <div className="flex flex-col gap-1 text-gray-400">
-
-                            <Link to="/collection">New Arrivals</Link>
-
-                            <Link
-                                to="/collection"
-                                state={{ gender: 'men' }}
-                            >
-                                Men
-                            </Link>
-
-                            <Link
-                                to="/collection"
-                                state={{ gender: 'women' }}
-                            >
-                                Women
-                            </Link>
-
-                            <Link to="/collection">Sale</Link>
-
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="font-semibold mb-2 tracking-widest">SUPPORT</h3>
-                        <div className="flex flex-col gap-1 text-gray-400">
-                            <p>Help Center</p>
-                            <p>Shipping</p>
-                            <p>Returns</p>
-                            <p>Order Status</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="font-semibold mb-2 tracking-widest">ABOUT</h3>
-                        <div className="flex flex-col gap-1 text-gray-400">
-                            <p>Our Story</p>
-                            <p>Sustainability</p>
-                            <p>Careers</p>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* Newsletter */}
-                <div>
-                    <h3 className="font-semibold mb-2 tracking-widest">
-                        JOIN US
-                    </h3>
-
-                    <input
-                        type="email"
-                        placeholder="Email address"
-                        className="w-full px-3 py-2 text-sm bg-gray-900 text-white outline-none border border-gray-700 placeholder-gray-500"
-                    />
-
-                    <button className="mt-3 w-full bg-white text-black py-2 text-sm font-semibold">
-                        SUBSCRIBE
-                    </button>
-                </div>
-
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-10">
+                {FOOTER_SECTIONS.map((section) => (
+                    <FooterColumn key={section.title} title={section.title} links={section.links} />
+                ))}
+                <div className="col-span-2 sm:col-span-1"><Newsletter /></div>
             </div>
-
-            {/* ================= BOTTOM BAR ================= */}
-            <div className="border-t border-gray-800 px-6 sm:px-10 py-4 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-2">
-
-                <p>© {new Date().getFullYear()} HOODKID. All rights reserved.</p>
-
-                <div className="flex gap-4">
-                    <p>Privacy</p>
-                    <p>Terms</p>
-                    <p>Cookies</p>
-                </div>
-
+            <div className="hidden sm:flex justify-between items-center mt-12 pt-8 border-t border-gray-800">
+                <Link to="/" className="inline-block">
+                    <h2 className="text-xl font-black tracking-tight text-white">HOODKID.</h2>
+                </Link>
+                <SocialLinks />
             </div>
+        </div>
+        <div className="border-t border-gray-800 px-6 sm:px-10 py-5 max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-3">
+            <p>(c) {new Date().getFullYear()} HOODKID. All rights reserved.</p>
+            <div className="flex gap-5">
+                {LEGAL_LINKS.map((link) => (
+                    <Link key={link.label} to={link.to} className="hover:text-white transition-colors duration-200">{link.label}</Link>
+                ))}
+            </div>
+        </div>
+    </footer>
+);
 
-        </footer>
-    )
-}
-
-export default Footer
+export default Footer;

@@ -1,96 +1,121 @@
-import React from 'react'
-import { assets } from "../assets/assets";
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
+import { assets } from '../assets/assets';
 
-const Hero = () => {
+/**
+ * Hero — renders two distinct stories: one mobile, one desktop.
+ *
+ * Each variant accepts its own content via `mobile` and `desktop` props.
+ * Defaults are provided so <Hero /> still works without configuration.
+ */
+const Hero = ({ mobile = defaultMobile, desktop = defaultDesktop }) => {
   return (
-    <div className="w-full">
+    <section className="w-full">
+      <MobileHero {...mobile} />
+      <DesktopHero {...desktop} />
+    </section>
+  );
+};
 
-      {/* ================= MOBILE ================= */}
-      <div className="block sm:hidden">
-
-        {/* Image (cut bottom by reducing height) */}
-        <div className="w-full h-[60vh] overflow-hidden relative">
-          <img
-            src={assets.p29}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-
-          {/* Optional light overlay */}
-          <div className="absolute inset-0 bg-black/10"></div>
-        </div>
-
-        {/* Text BELOW image */}
-        <div className="text-center px-6 py-6 flex flex-col items-center">
-          <h1 className="text-2xl font-bold tracking-wide">
-            ANTI-PILLING FLEECE
-          </h1>
-
-          {/* CTA group */}
-          <div className="flex flex-col items-center mt-2 gap-1">
-            <p className="text-gray-600 text-xs tracking-widest">
-              Soft feel. No compromises.
-            </p>
-
-            <Link
-              to="/collection"
-              state={{ subcategory: 'anti pilling fleece' }} // 👈 change based on hero
-            >
-              <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
-                SHOP NOW
-              </button>
-            </Link>
-          </div>
-        </div>
-
-      </div>
-
-      {/* ================= DESKTOP ================= */}
-      <div className="hidden sm:block relative w-full h-[80vh] overflow-hidden">
-
-        <div className="grid grid-cols-2 h-full">
-          <img
-            src={assets.p26}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-          <img
-            src={assets.p30}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/10"></div>
-
-        {/* Text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-
-          <p className="text-white text-sm tracking-widest mb-3">
-            LEVEL UP YOUR LOOK
-          </p>
-
-          <h1 className="text-white text-4xl md:text-6xl font-bold tracking-wide">
-            NEW SEASON DROP
-          </h1>
-          
-          <Link
-            to="/collection"
-            state={{ subcategory: 'anti pilling fleece' }} // 👈 change based on hero
-          >
-            <button className="mt-6 px-6 py-2 bg-white text-black text-sm font-semibold hover:bg-black hover:text-white transition">
-              SHOP NOW
-            </button>
-          </Link>
-
-        </div>
-
-      </div>
-
+/* ============================================================
+   MOBILE VARIANT
+   ============================================================ */
+const MobileHero = ({ image, title, subtitle, ctaLabel, ctaTo, ctaState }) => (
+  <div className="block sm:hidden">
+    <div className="relative w-full h-[60vh] overflow-hidden">
+      <img
+        src={image}
+        alt={title}
+        loading="eager"
+        fetchPriority="high"
+        className="w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 bg-black/10" />
     </div>
-  )
-}
 
-export default Hero
+    <div className="text-center px-6 py-6 flex flex-col items-center">
+      <h1 className="text-2xl font-black tracking-tight">
+        {title}
+      </h1>
+
+      {subtitle && (
+        <p className="mt-2 text-xs tracking-widest text-gray-600 uppercase">
+          {subtitle}
+        </p>
+      )}
+
+      {ctaLabel && ctaTo && (
+        <Link to={ctaTo} state={ctaState}>
+          <button className="mt-4 px-6 py-2.5 bg-black text-white text-sm font-bold hover:bg-gray-900 transition-colors duration-200">
+            {ctaLabel}
+          </button>
+        </Link>
+      )}
+    </div>
+  </div>
+);
+
+/* ============================================================
+   DESKTOP VARIANT
+   ============================================================ */
+const DesktopHero = ({ images, eyebrow, title, ctaLabel, ctaTo, ctaState }) => (
+  <div className="hidden sm:block relative w-full h-[80vh] overflow-hidden">
+    <div className="grid grid-cols-2 h-full">
+      {images.map((src, i) => (
+        <img
+          key={i}
+          src={src}
+          alt={`${title} ${i + 1}`}
+          loading="eager"
+          fetchPriority="high"
+          className="w-full h-full object-cover"
+        />
+      ))}
+    </div>
+
+    <div className="absolute inset-0 bg-black/10" />
+
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+      {eyebrow && (
+        <p className="text-white text-sm tracking-widest mb-3 uppercase">
+          {eyebrow}
+        </p>
+      )}
+
+      <h1 className="text-white text-4xl md:text-6xl font-black tracking-tight">
+        {title}
+      </h1>
+
+      {ctaLabel && ctaTo && (
+        <Link to={ctaTo} state={ctaState}>
+          <button className="mt-6 px-8 py-2.5 bg-white text-black text-sm font-bold hover:bg-black hover:text-white transition-colors duration-200">
+            {ctaLabel}
+          </button>
+        </Link>
+      )}
+    </div>
+  </div>
+);
+
+/* ============================================================
+   DEFAULT CONTENT
+   ============================================================ */
+const defaultMobile = {
+  image: assets.p29,
+  title: 'ANTI-PILLING FLEECE',
+  subtitle: 'Soft feel. No compromises.',
+  ctaLabel: 'SHOP NOW',
+  ctaTo: '/collection',
+  ctaState: { subcategory: 'anti pilling fleece' },
+};
+
+const defaultDesktop = {
+  images: [assets.p26, assets.p30],
+  eyebrow: 'Level up your look',
+  title: 'NEW SEASON DROP',
+  ctaLabel: 'SHOP NOW',
+  ctaTo: '/collection',
+  ctaState: { subcategory: 'anti pilling fleece' },
+};
+
+export default memo(Hero);

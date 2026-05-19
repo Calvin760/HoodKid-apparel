@@ -1,35 +1,45 @@
-import { Link } from "react-router-dom";
-import ProductItem from "../ProductItem";
-import { formatImages } from "../../utils/formatImages";
+import { useMemo, memo } from 'react';
+import ProductCard from './ProductCard'; // from the BestSeller/Headwear refactor
+import { useContext } from 'react';
+import { ShopContext } from '../../context/ShopContext';
 
-const RelatedProducts = ({ product, products }) => {
-    const related = products
-        .filter(p => p.category === product.category && p._id !== product._id)
-        .slice(0, 4);
+const RelatedProducts = ({ product, products, limit = 4 }) => {
+    const { toggleWishlist, wishlistIds } = useContext(ShopContext);
+
+    const related = useMemo(() => {
+        if (!product || !products?.length) return [];
+        const category = product.category?.toLowerCase();
+        return products
+            .filter(
+                (p) =>
+                    p.category?.toLowerCase() === category && p._id !== product._id
+            )
+            .slice(0, limit);
+    }, [product, products, limit]);
+
+    if (related.length === 0) return null;
+
+    const isWishlisted = (id) => wishlistIds.includes(id);
 
     return (
-        <div className="mt-16">
-            <h2 className="text-xl font-semibold mb-6">You May Also Like</h2>
+        <section className="mt-16">
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight mb-6">
+                You May Also Like
+            </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {related.map(item => (
-                    <Link key={item._id} to={`/product/${item._id}`}>
-                        <ProductItem
-                            id={item._id}
-                            name={item.name}
-                            image={
-                                item.colours?.[0]?.images?.length
-                                    ? formatImages(item.colours[0].images)
-                                    : formatImages(item.image)
-                            }
-                            price={item.price}
-                            colours={item.colours}
-                        />
-                    </Link>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
+                {related.map((item) => (
+                    <ProductCard
+                        key={item._id}
+                        product={item}
+                        liked={isWishlisted(item._id)}
+                        onToggleWishlist={toggleWishlist}
+                        heartPosition="top-2 right-2 sm:top-3 sm:right-3"
+                    />
                 ))}
             </div>
-        </div>
+        </section>
     );
 };
 
-export default RelatedProducts;
+export default memo(RelatedProducts);

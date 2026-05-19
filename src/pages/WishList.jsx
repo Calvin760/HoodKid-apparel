@@ -1,101 +1,72 @@
-import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import { ShopContext } from '../context/ShopContext'
-import { toast } from 'react-toastify'
+import { useContext, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { FiHeart } from 'react-icons/fi';
 
+import { ShopContext } from '../context/ShopContext';
+import ProductCard from '../components/product/ProductCard';
 
-const WishList = () => {
-
-  const {
-    wishlistProducts,
-    wishlistIds,
-    toggleWishlist
-  } = useContext(ShopContext)
-
- 
-  const API_URL = import.meta.env.VITE_API_URL
-
-  // ================= EMPTY STATE =================
-  if (!wishlistProducts.length) {
-    return (
-      <div className="max-w-4xl mx-auto p-10 text-center">
-        <h2 className="text-2xl font-semibold mb-4">
-          Your Wishlist is Empty
-        </h2>
-        <Link to="/collection">
-          
-          <button className="mt-2 px-6 py-2 bg-black text-white text-sm font-semibold">
-            Explore Products
-          </button>
-        </Link>
-      </div>
-    )
-  }
-
-  // ================= UI =================
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-
-      <h1 className="text-2xl font-semibold mb-10">
-        Your Wishlist
-      </h1>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-
-        {wishlistProducts.map((item) => {
-
-          const isWishlisted = wishlistIds.includes(item._id)
-
-          return (
-            <div key={item._id} className="relative group">
-
-              {/* REMOVE */}
-              <button
-                onClick={() => toggleWishlist(item._id)}
-                className="absolute top-2 right-2 bg-white px-2 py-1 text-sm border"
-              >
-                ✕
-              </button>
-
-              {/* IMAGE */}
-              <Link to={`/product/${item._id}`}>
-                <div className=" p-4">
-                  <img
-                    src={
-                      item.image?.[0]?.startsWith("http")
-                        ? item.image[0]
-                        : `${API_URL}/${item.image?.[0]}`
-                    }
-                    className="h-40 object-contain mx-auto"
-                    alt={item.name}
-                  />
-                </div>
-              </Link>
-
-              {/* INFO */}
-              <p className="mt-3 text-sm">{item.name}</p>
-              <p className="font-medium">
-                R{item.price}
-              </p>
-
-              {/* ACTIONS */}
-              <div className="mt-3 flex flex-col gap-2">
-                <Link
-                  to={`/product/${item._id}`}
-                  className="border text-center py-2 text-sm"
-                >
-                  View Product
-                </Link>
-              </div>
-
-            </div>
-          )
-        })}
-
-      </div>
-
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+const EmptyWishlist = () => (
+  <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+      <FiHeart size={28} strokeWidth={2} className="text-gray-400" />
     </div>
-  )
-}
 
-export default WishList
+    <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3">
+      Your wishlist is empty
+    </h2>
+    <p className="text-sm text-gray-500 mb-8">
+      Tap the heart on any product to save it for later.
+    </p>
+
+    <Link
+      to="/collection"
+      className="inline-block px-8 py-3 bg-black text-white text-sm font-bold uppercase tracking-wide hover:bg-gray-900 transition-colors duration-200"
+    >
+      Explore Products
+    </Link>
+  </div>
+);
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+const WishList = () => {
+  const { wishlistProducts, wishlistIds, toggleWishlist } = useContext(ShopContext);
+
+  const count = wishlistProducts.length;
+
+  // Wishlist lookup as a Set — O(1) per check vs O(n) on Array.includes
+  const wishlistSet = useMemo(() => new Set(wishlistIds), [wishlistIds]);
+
+  if (count === 0) return <EmptyWishlist />;
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+      <header className="mb-10">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+          Your Wishlist
+          <span className="ml-3 text-sm font-medium text-gray-500">
+            ({count} {count === 1 ? 'item' : 'items'})
+          </span>
+        </h1>
+      </header>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
+        {wishlistProducts.map((item) => (
+          <ProductCard
+            key={item._id}
+            product={item}
+            liked={wishlistSet.has(item._id)}
+            onToggleWishlist={toggleWishlist}
+            heartPosition="top-2 right-2 sm:top-3 sm:right-3"
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default WishList;

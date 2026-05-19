@@ -1,118 +1,117 @@
-import React, { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { FiUser, FiShoppingBag, FiHeart, FiLogOut } from 'react-icons/fi'
-import Loading from '../components/Loading'
-import { useUser, useClerk } from '@clerk/clerk-react'
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser, useClerk } from '@clerk/clerk-react';
+import {
+    FiUser,
+    FiShoppingBag,
+    FiHeart,
+    FiLogOut,
+    FiShield,
+    FiChevronRight,
+} from 'react-icons/fi';
+import Loading from '../components/Loading';
 
 const Account = () => {
+    const navigate = useNavigate();
+    const { user, isLoaded } = useUser();
+    const { signOut, redirectToSignIn } = useClerk();
 
-    const navigate = useNavigate()
-    const { user, isLoaded } = useUser()
-    const { signOut } = useClerk()
-
-    // ✅ FIX: redirect if NOT logged in
+    // Redirect unauthenticated users via Clerk (env-aware, no hardcoded URL)
     useEffect(() => {
         if (isLoaded && !user) {
-            window.location.href =
-                "https://flowing-hen-56.accounts.dev/sign-in";
+            redirectToSignIn();
         }
-    }, [isLoaded, user]);
+    }, [isLoaded, user, redirectToSignIn]);
 
-    if (!isLoaded) {
-        return <Loading />
-    }
+    if (!isLoaded || !user) return <Loading />;
 
-    // still loading user → show loader
-    if (!user) {
-        return <Loading />
-    }
+    const name = user.fullName || user.firstName || 'User';
+    const email = user.primaryEmailAddress?.emailAddress || '';
+    const isAdmin = user.publicMetadata?.role === 'admin';
+    const initial = (name[0] || 'U').toUpperCase();
 
-    // Clerk fields
-    const name =
-        user.fullName ||
-        user.firstName ||
-        "User"
+    const accountLinks = [
+        {
+            to: '/orders',
+            icon: FiShoppingBag,
+            label: 'Orders',
+            description: 'Track your purchases',
+        },
+        {
+            to: '/wishlist',
+            icon: FiHeart,
+            label: 'Wishlist',
+            description: 'Saved items',
+        },
+        {
+            to: '/profile',
+            icon: FiUser,
+            label: 'Profile',
+            description: 'Edit your details',
+        },
+        ...(isAdmin
+            ? [{
+                to: '/admin',
+                icon: FiShield,
+                label: 'Admin Panel',
+                description: 'Manage store',
+            }]
+            : []),
+    ];
 
-    const email =
-        user.primaryEmailAddress?.emailAddress || ""
-
-    const isAdmin =
-        user.publicMetadata?.role === "admin"
-
-    const logout = async () => {
-        await signOut()
-        navigate("/signin")
-    }
+    const handleLogout = async () => {
+        await signOut();
+        // useEffect above will redirect to sign-in once user becomes null
+    };
 
     return (
         <div className="px-6 sm:px-12 py-16 max-w-5xl mx-auto text-black">
-
-            <h1 className="text-3xl sm:text-4xl font-semibold mb-10">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-10">
                 My Account
             </h1>
 
-            <div className="border border-gray-200 p-6 rounded-xl mb-10 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center">
-                    {name?.charAt(0)}
+            {/* USER CARD */}
+            <div className="border border-gray-200 p-6 rounded-lg mb-10 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-bold flex-shrink-0">
+                    {initial}
                 </div>
-
-                <div>
-                    <p className="font-semibold">{name}</p>
-                    <p className="text-gray-500 text-sm">{email}</p>
+                <div className="flex-1 min-w-0">
+                    <p className="font-bold truncate">{name}</p>
+                    <p className="text-sm text-gray-500 truncate">{email}</p>
                 </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-6">
-
-                <Link to="/orders" className="border p-6 rounded-xl hover:shadow-md transition flex items-center gap-4">
-                    <FiShoppingBag size={22} />
-                    <div>
-                        <p className="font-medium">Orders</p>
-                        <p className="text-sm text-gray-500">Track your purchases</p>
-                    </div>
-                </Link>
-
-                <Link to="/wishlist" className="border p-6 rounded-xl hover:shadow-md transition flex items-center gap-4">
-                    <FiHeart size={22} />
-                    <div>
-                        <p className="font-medium">Wishlist</p>
-                        <p className="text-sm text-gray-500">Saved items</p>
-                    </div>
-                </Link>
-
-                <Link to='/profile' className="border p-6 rounded-xl flex items-center gap-4 cursor-pointer hover:shadow-md transition">
-                    <FiUser size={22} />
-                    <div>
-                        <p className="font-medium">Profile</p>
-                        <p className="text-sm text-gray-500">Edit your details</p>
-                    </div>
-                </Link>
-
-                {isAdmin && (
+            {/* ACTIONS GRID */}
+            <div className="grid sm:grid-cols-2 gap-4">
+                {accountLinks.map(({ to, icon: Icon, label, description }) => (
                     <Link
-                        to="/admin"
-                        className="border p-6 rounded-xl hover:shadow-md transition flex items-center gap-4"
+                        key={to}
+                        to={to}
+                        className="group border border-gray-200 p-6 rounded-lg flex items-center gap-4 hover:bg-gray-50 transition-all duration-200"
                     >
-                        <FiUser size={22} />
-                        <div>
-                            <p className="font-medium">Admin Panel</p>
-                            <p className="text-sm text-gray-500">Manage store</p>
+                        <Icon size={22} strokeWidth={2.5} className="flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                            <p className="font-bold">{label}</p>
+                            <p className="text-sm text-gray-500">{description}</p>
                         </div>
+                        <FiChevronRight
+                            size={18}
+                            strokeWidth={2.5}
+                            className="text-gray-400 group-hover:translate-x-1 transition-transform duration-200"
+                        />
                     </Link>
-                )}
+                ))}
 
                 <button
-                    onClick={logout}
-                    className="border p-6 rounded-xl flex items-center gap-4 hover:bg-black hover:text-white transition"
+                    onClick={handleLogout}
+                    className="border border-gray-200 p-6 rounded-lg flex items-center gap-4 hover:bg-black hover:text-white transition-all duration-200 font-bold text-left"
                 >
-                    <FiLogOut size={22} />
-                    Logout
+                    <FiLogOut size={22} strokeWidth={2.5} className="flex-shrink-0" />
+                    <span>Logout</span>
                 </button>
-
             </div>
-
         </div>
-    )
-}
+    );
+};
 
-export default Account
+export default Account;

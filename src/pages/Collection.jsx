@@ -295,15 +295,17 @@ const Collection = () => {
                     <button
                       key={c}
                       onClick={() => setColour(c)}
-                      className={`relative group transition-transform duration-200 ${colour === c ? 'scale-110' : 'hover:scale-105'
-                        }`}
+                      className={`relative group transition-transform duration-200 ${
+                        colour === c ? 'scale-110' : 'hover:scale-105'
+                      }`}
                       title={c}
                     >
                       <div
-                        className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${colour === c
+                        className={`w-8 h-8 rounded-full border-2 transition-all duration-200 ${
+                          colour === c
                             ? 'border-black ring-2 ring-black ring-offset-2'
                             : 'border-gray-300 hover:border-black'
-                          }`}
+                        }`}
                         style={{
                           backgroundColor: c === 'all' ? '#F5F5F5' : colourMap[c] || '#E5E7EB'
                         }}
@@ -489,14 +491,16 @@ const Collection = () => {
                       <button
                         key={c}
                         onClick={() => setColour(c)}
-                        className={`relative transition-transform duration-200 ${colour === c ? 'scale-110' : 'hover:scale-105'
-                          }`}
+                        className={`relative transition-transform duration-200 ${
+                          colour === c ? 'scale-110' : 'hover:scale-105'
+                        }`}
                       >
                         <div
-                          className={`w-12 h-12 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${colour === c
+                          className={`w-12 h-12 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
+                            colour === c
                               ? 'border-black ring-2 ring-black ring-offset-2'
                               : 'border-gray-300 hover:border-black'
-                            }`}
+                          }`}
                           style={{
                             backgroundColor: c === 'all' ? '#F5F5F5' : colourMap[c] || '#E5E7EB'
                           }}

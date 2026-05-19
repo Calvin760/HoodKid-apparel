@@ -1,149 +1,201 @@
-import { React, useContext } from 'react';
-import { Link } from 'react-router-dom'
-import { ShopContext } from "../context/ShopContext";
-import { optimizeCloudinaryVideo } from "../utils/cloudinary";
+import { useContext, useMemo, memo } from 'react';
+import { Link } from 'react-router-dom';
+import { ShopContext } from '../context/ShopContext';
+import { optimizeCloudinaryVideo } from '../utils/cloudinary';
 
+const API_URL = import.meta.env.VITE_API_URL;
 
-const FreshDrop = () => {
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const resolveUrl = (src) =>
+    !src ? '' : src.startsWith('http') ? src : `${API_URL}/${src}`;
 
-    const { products } = useContext(ShopContext);
-    const API_URL = import.meta.env.VITE_API_URL;
+const resolveVideo = (product) =>
+    product?.video ? optimizeCloudinaryVideo(resolveUrl(product.video)) : null;
 
-    const heroProduct = products?.find(
-        (item) => item.hero === "hero2"
-    );
+/* ============================================================
+   AUTOPLAY VIDEO
+   ============================================================ */
+const AutoplayVideo = ({ src, className = '' }) => (
+    <video
+        className={className}
+        autoPlay loop muted playsInline preload="metadata"
+    >
+        <source src={src} type="video/mp4" />
+    </video>
+);
 
-    const heroProduct2 = products?.find(
-        (item) => item.hero === "hero3"
-    );
+/* ============================================================
+   CTA BUTTON — two visual variants
+   ============================================================ */
+const CtaButton = ({ to, state, variant = 'light', children }) => {
+    const styles =
+        variant === 'light'
+            ? 'bg-white text-black border-white hover:bg-black hover:text-white'
+            : 'bg-black text-white border-black hover:bg-white hover:text-black';
 
-    const getVideo = (product) => {
-        if (!product?.video) return null;
-
-        return product.video.startsWith("http")
-            ? product.video
-            : `${API_URL}/${product.video}`;
-    };
-
-
-    const heroVideo = optimizeCloudinaryVideo(
-        getVideo(heroProduct)
-    );
-    const heroVideo2 = optimizeCloudinaryVideo(
-        getVideo(heroProduct2)
-    );
-    // const heroImage = getImage(heroProduct);
-
-    if (!heroProduct) return null;
     return (
-        <div className='my-20'>
+        <Link to={to} state={state}>
+            <button
+                className={`mt-6 w-fit px-7 py-2.5 text-sm font-bold border transition-colors duration-200 ${styles}`}
+            >
+                {children}
+            </button>
+        </Link>
+    );
+};
 
-            {/* ================= HERO ================= */}
-            <div className="relative w-full h-[65vh] overflow-hidden mb-16">
+/* ============================================================
+   CINEMATIC HERO (full-bleed video + left-aligned copy)
+   ============================================================ */
+const CinematicHero = ({ video, eyebrow, title, ctaLabel, ctaTo, ctaState }) => (
+    <div className="relative w-full h-[65vh] overflow-hidden mb-16">
+        <AutoplayVideo src={video} className="w-full h-full object-cover scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
 
-                <video
-                    className="w-full h-full object-cover scale-105"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="metadata"
-                >
-                    <source src={heroVideo} type="video/mp4" />
-                </video>
+        <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-16">
+            <h2 className="text-white text-3xl sm:text-5xl font-black tracking-tight leading-tight whitespace-pre-line">
+                {title}
+            </h2>
 
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+            {eyebrow && (
+                <p className="mt-2 text-sm tracking-widest text-gray-300 uppercase">
+                    {eyebrow}
+                </p>
+            )}
 
-                <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-16">
-
-                    <h2 className="text-white text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
-                        FRESH
-                        <br />
-                        ENERGY
-                    </h2>
-
-                    <p className="text-gray-300 text-sm mt-2 tracking-widest">
-                        ENGINEERED FOR IMPACT
-                    </p>
-
-                    <Link to="/collection" state={{ subcategory: 'anti pilling fleece' }}>
-                        <button className="mt-6 px-7 py-2 bg-white text-black text-sm font-bold tracking-wide hover:bg-black hover:text-white border border-white transition">
-                            EXPLORE
-                        </button>
-                    </Link>
-                </div>
-            </div>
-
-            {/* ================= STATEMENT TEXT (PUMA STYLE) ================= */}
-            <div className="px-6 sm:px-[8vw] mb-16">
-
-                <div className="max-w-3xl">
-
-                    <h3 className="text-2xl sm:text-4xl font-extrabold leading-tight tracking-tight">
-                        BUILT TO MOVE.
-                        <br />
-                        DESIGNED TO DISRUPT.
-                    </h3>
-
-                    <p className="mt-4 text-gray-600 text-sm sm:text-base leading-relaxed">
-                        This is not just another drop. It’s a shift in energy — where performance meets street precision.
-                        Every detail is tuned for motion, speed, and presence.
-                    </p>
-
-                </div>
-
-            </div>
-
-            {/* ================= PORTRAIT PRODUCT VIDEO ================= */}
-            <div className="px-6 sm:px-[8vw]">
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-
-                    {/* VIDEO */}
-                    <div className="relative w-full h-[75vh] sm:h-[80vh] overflow-hidden rounded-2xl">
-
-                        <video
-                            className="w-full h-full object-cover"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            preload="metadata"
-                        >
-                            {/* 🔥 YOUR PORTRAIT PRODUCT VIDEO */}
-                            <source src={heroVideo2} type="video/mp4" />
-                        </video>
-
-                        <div className="absolute inset-0 bg-black/20"></div>
-
-                    </div>
-
-                    {/* TEXT SIDE */}
-                    <div className="flex flex-col justify-center">
-
-                        <h4 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                            NEXT GEN STREETWEAR
-                        </h4>
-
-                        <p className="mt-4 text-gray-600 leading-relaxed text-sm sm:text-base">
-                            Precision cuts. Lightweight feel. Maximum attitude.
-                            Built for creators, movers, and rule breakers.
-                        </p>
-
-                        <Link to="/collection" state={{ subcategory: 'menace to the society' }}>
-                            <button className="mt-6 w-fit px-6 py-2 bg-black text-white text-sm font-semibold hover:bg-white hover:text-black border border-black transition">
-                                SHOP THE DROP
-                            </button>
-                        </Link>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+            {ctaLabel && ctaTo && (
+                <CtaButton to={ctaTo} state={ctaState} variant="light">
+                    {ctaLabel}
+                </CtaButton>
+            )}
         </div>
-    )
-}
+    </div>
+);
 
-export default FreshDrop
+/* ============================================================
+   STATEMENT BLOCK
+   ============================================================ */
+const StatementBlock = ({ title, body }) => (
+    <div className="px-6 sm:px-[8vw] mb-16">
+        <div className="max-w-3xl">
+            <h3 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight whitespace-pre-line">
+                {title}
+            </h3>
+            {body && (
+                <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">
+                    {body}
+                </p>
+            )}
+        </div>
+    </div>
+);
+
+/* ============================================================
+   PORTRAIT SPLIT (video left, copy right)
+   ============================================================ */
+const PortraitSplit = ({ video, title, body, ctaLabel, ctaTo, ctaState }) => (
+    <div className="px-6 sm:px-[8vw]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+            <div className="relative w-full h-[75vh] sm:h-[80vh] overflow-hidden rounded-2xl">
+                <AutoplayVideo src={video} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/20" />
+            </div>
+
+            <div className="flex flex-col justify-center">
+                <h4 className="text-2xl sm:text-3xl font-black tracking-tight">
+                    {title}
+                </h4>
+                {body && (
+                    <p className="mt-4 text-sm sm:text-base text-gray-600 leading-relaxed">
+                        {body}
+                    </p>
+                )}
+                {ctaLabel && ctaTo && (
+                    <CtaButton to={ctaTo} state={ctaState} variant="dark">
+                        {ctaLabel}
+                    </CtaButton>
+                )}
+            </div>
+        </div>
+    </div>
+);
+
+/* ============================================================
+   MAIN COMPONENT
+   ============================================================ */
+const FreshDrop = ({
+    hero = defaultHero,
+    statement = defaultStatement,
+    portrait = defaultPortrait,
+}) => {
+    const { products } = useContext(ShopContext);
+
+    const heroVideo = useMemo(
+        () => resolveVideo(products?.find((p) => p.hero === hero.heroKey)),
+        [products, hero.heroKey]
+    );
+
+    const portraitVideo = useMemo(
+        () => resolveVideo(products?.find((p) => p.hero === portrait.heroKey)),
+        [products, portrait.heroKey]
+    );
+
+    // Hide entire section if the cinematic hero has no video source
+    if (!heroVideo) return null;
+
+    return (
+        <section className="my-20">
+            <CinematicHero
+                video={heroVideo}
+                eyebrow={hero.eyebrow}
+                title={hero.title}
+                ctaLabel={hero.ctaLabel}
+                ctaTo={hero.ctaTo}
+                ctaState={hero.ctaState}
+            />
+
+            <StatementBlock title={statement.title} body={statement.body} />
+
+            {portraitVideo && (
+                <PortraitSplit
+                    video={portraitVideo}
+                    title={portrait.title}
+                    body={portrait.body}
+                    ctaLabel={portrait.ctaLabel}
+                    ctaTo={portrait.ctaTo}
+                    ctaState={portrait.ctaState}
+                />
+            )}
+        </section>
+    );
+};
+
+/* ============================================================
+   DEFAULT CONTENT
+   ============================================================ */
+const defaultHero = {
+    heroKey: 'hero2',
+    eyebrow: 'Engineered for impact',
+    title: 'FRESH\nENERGY',
+    ctaLabel: 'EXPLORE',
+    ctaTo: '/collection',
+    ctaState: { subcategory: 'anti pilling fleece' },
+};
+
+const defaultStatement = {
+    title: 'BUILT TO MOVE.\nDESIGNED TO DISRUPT.',
+    body: 'This is not just another drop. It\u2019s a shift in energy \u2014 where performance meets street precision. Every detail is tuned for motion, speed, and presence.',
+};
+
+const defaultPortrait = {
+    heroKey: 'hero3',
+    title: 'NEXT GEN STREETWEAR',
+    body: 'Precision cuts. Lightweight feel. Maximum attitude. Built for creators, movers, and rule breakers.',
+    ctaLabel: 'SHOP THE DROP',
+    ctaTo: '/collection',
+    ctaState: { subcategory: 'menace to the society' },
+};
+
+export default memo(FreshDrop);
