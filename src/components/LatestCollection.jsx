@@ -19,9 +19,7 @@ const LatestCollection = ({ limit = 8 }) => {
 
     const latestProducts = useMemo(() => {
         if (!products?.length) return null;
-        return products
-            .filter((p) => p.latestCollection === true)
-            .slice(0, limit);
+        return products.filter((p) => p.latestCollection === true).slice(0, limit);
     }, [products, limit]);
 
     const isWishlisted = (id) => wishlistIds.includes(id);
@@ -29,32 +27,39 @@ const LatestCollection = ({ limit = 8 }) => {
     if (latestProducts === null) {
         return <Loading text="Loading latest collection..." />;
     }
-
     if (latestProducts.length === 0) return null;
 
     return (
         <section className="my-10">
-            {/* MOBILE: horizontal scroll */}
-            <div className="sm:hidden px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
-                <div className="flex overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory gap-3 px-4">
-                    {latestProducts.map((item) => (
-                        <div
-                            key={item._id}
-                            className="relative flex-shrink-0 w-[65%] snap-start"
-                        >
-                            <WishlistButton
-                                liked={isWishlisted(item._id)}
-                                onClick={() => toggleWishlist(item._id)}
-                            />
-                            <ProductItem
-                                id={item._id}
-                                name={item.name}
-                                image={pickProductImages(item)}
-                                price={item.price}
-                                colours={item.colours}
-                            />
-                        </div>
-                    ))}
+            {/* MOBILE: hero-first horizontal scroll */}
+            <div className="sm:hidden">
+                <div className="flex overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory">
+                    {latestProducts.map((item, index) => {
+                        const isHero = index === 0;
+                        return (
+                            <div
+                                key={item._id}
+                                className={`relative flex-shrink-0 snap-start ${isHero
+                                        ? 'w-[88%] pl-4 pr-2'
+                                        : 'w-[55%] pr-2'
+                                    }`}
+                            >
+                                <WishlistButton
+                                    liked={isWishlisted(item._id)}
+                                    onClick={() => toggleWishlist(item._id)}
+                                />
+                                <ProductItem
+                                    id={item._id}
+                                    name={item.name}
+                                    image={pickProductImages(item)}
+                                    price={item.price}
+                                    colours={item.colours}
+                                />
+                            </div>
+                        );
+                    })}
+                    {/* Right-edge spacer so the last item gets breathing room */}
+                    <div className="flex-shrink-0 w-4" aria-hidden="true" />
                 </div>
             </div>
 
@@ -82,9 +87,6 @@ const LatestCollection = ({ limit = 8 }) => {
     );
 };
 
-/* ============================================================
-   WISHLIST BUTTON
-   ============================================================ */
 const WishlistButton = ({ liked, onClick }) => (
     <button
         onClick={onClick}
