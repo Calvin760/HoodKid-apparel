@@ -9,8 +9,8 @@ const ProductItem = ({ id, image, name, price, colours }) => {
   const colourCount = colours?.length ?? 0;
   const colourLabel =
     colourCount > 0
-      ? `${colourCount} Colour${colourCount > 1 ? 's' : ''}`
-      : 'Single Colour';
+      ? `${colourCount} COLOUR${colourCount > 1 ? 'S' : ''}`
+      : 'SINGLE COLOUR';
 
   const primaryImage = image?.[0];
 
@@ -32,24 +32,19 @@ const ProductItem = ({ id, image, name, price, colours }) => {
         />
       </div>
 
-      {/* INFO */}
-      <div className="mt-4 px-1">
-        <div className="flex items-start justify-between gap-3">
-          {/* LEFT: name + colour count */}
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-black leading-snug line-clamp-1">
-              {name}
-            </p>
-            <p className="mt-1 text-xs text-gray-500">
-              {colourLabel}
-            </p>
-          </div>
+      {/* INFO — Puma style, fully left-aligned */}
+      <div className="mt-4">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500">
+          {colourLabel}
+        </p>
 
-          {/* RIGHT: price */}
-          <p className="text-sm font-bold text-black whitespace-nowrap">
-            {currency} {price}
-          </p>
-        </div>
+        <p className="mt-2 text-sm font-medium text-black leading-snug line-clamp-2">
+          {name}
+        </p>
+
+        <p className="mt-2 text-sm font-bold text-black">
+          {currency} {price}
+        </p>
       </div>
     </Link>
   );
