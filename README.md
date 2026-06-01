@@ -1,16 +1,201 @@
-# React + Vite
+# HOODKID APPAREL
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![HOODKID APPAREL](https://github.com/Calvin760/HoodKid-apparel/blob/ca1e1ce15954a8ca9dec713db496eeba2cadbde0/ChatGPT%20Image%20Jun%201%2C%202026%2C%2007_54_24%20PM.png)
 
-Currently, two official plugins are available:
+A modern mobile-first streetwear e-commerce application built for the HOODKID Apparel brand.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The platform delivers a premium shopping experience focused on performance, usability, and clean design while providing customers with seamless product discovery, wishlist management, and secure checkout flows.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Features
 
-## Expanding the ESLint configuration
+### Customer Experience
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* Browse collections and latest drops
+* Product search and filtering
+* Wishlist management
+* Product variants (sizes and colours)
+* Shopping cart functionality
+* Responsive mobile-first design
+* Product detail pages
+* Category browsing
+* Modern streetwear-focused UI
+
+### Performance
+
+* Optimized image loading
+* Lazy loaded routes
+* Reusable component architecture
+* Fast Vite build system
+* Mobile-first responsive layouts
+
+### User Interface
+
+* Premium streetwear aesthetic
+* Clean typography
+* Modern product cards
+* Interactive wishlist actions
+* Smooth navigation experience
+* Scalable design system
+
+---
+
+## Tech Stack
+
+### Frontend
+
+* React
+* Vite
+* React Router
+* Context API
+* CSS Modules / Custom Styling
+
+### Development Tools
+
+* ESLint
+* Git
+* GitHub
+
+---
+
+## Application Preview
+
+### Home Screen
+
+* Featured collections
+* Promotional banners
+* Product showcases
+* Category navigation
+
+### Product Listing
+
+* Product cards
+* Wishlist support
+* Colour variations
+* Pricing display
+
+### Product Details
+
+* Product gallery
+* Size selection
+* Colour selection
+* Add to cart
+* Product information
+
+---
+
+## Project Structure
+
+```bash
+src/
+├── assets/
+├── components/
+│   ├── Navbar/
+│   ├── ProductCard/
+│   ├── Footer/
+│   └── UI/
+├── context/
+├── hooks/
+├── pages/
+│   ├── Home/
+│   ├── Collection/
+│   ├── Product/
+│   ├── Cart/
+│   └── Wishlist/
+├── services/
+├── utils/
+└── App.jsx
+```
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Calvin760/HoodKid-apparel.git
+```
+
+Navigate into the project:
+
+```bash
+cd HoodKid-apparel
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start development server:
+
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+Preview production build:
+
+```bash
+npm run preview
+```
+
+---
+
+## Design Goals
+
+The HOODKID APPAREL application was designed around four core principles:
+
+* Performance
+* Scalability
+* Reusability
+* User Experience
+
+The architecture prioritizes clean component composition, maintainable code, and an engaging shopping experience tailored for modern streetwear customers.
+
+---
+
+## Future Enhancements
+
+* User authentication
+* Order history
+* Stripe payments
+* Product reviews
+* Loyalty rewards
+* Admin dashboard
+* Inventory management
+* Push notifications
+* AI-powered product recommendations
+
+---
+
+## Author
+
+### Nhlamolo Mhlanga
+
+Full Stack Developer specializing in:
+
+* React
+* React Native
+* Node.js
+* Express.js
+* NestJS
+* PostgreSQL
+* Prisma
+* AWS
+
+GitHub: https://github.com/Calvin760
+
+---
+
+## License
+
+This project is licensed under the MIT License.
